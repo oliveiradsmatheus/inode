@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "untitled"
+			"path" : "inode"
 		}
 	],
 	"backtrace" : 1,
@@ -53,7 +53,7 @@
 			]
 		}
 	],
-	"id" : "untitled::@6890427a1f51a3e7e1df",
+	"id" : "inode::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
@@ -69,8 +69,8 @@
 		],
 		"language" : "C"
 	},
-	"name" : "untitled",
-	"nameOnDisk" : "untitled",
+	"name" : "inode",
+	"nameOnDisk" : "inode",
 	"paths" : 
 	{
 		"build" : ".",
@@ -89,7 +89,9 @@
 			"name" : "Header Files",
 			"sourceIndexes" : 
 			[
-				1
+				1,
+				2,
+				3
 			]
 		}
 	],
@@ -104,6 +106,16 @@
 		{
 			"backtrace" : 1,
 			"path" : "bibliotecas/bloco.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "bibliotecas/pilha.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "bibliotecas/comandos.h",
 			"sourceGroupIndex" : 1
 		}
 	],

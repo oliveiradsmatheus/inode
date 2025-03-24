@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/untitled/cmake-build-debug"
+			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -415,7 +415,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/untitled/cmake-build-debug/CMakeFiles/pkgRedirects"
+			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-debug/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -427,7 +427,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "Ninja"
+			"value" : "Unix Makefiles"
 		},
 		{
 			"name" : "CMAKE_GENERATOR_INSTANCE",
@@ -475,7 +475,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/untitled"
+			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -522,12 +522,16 @@
 			"properties" : 
 			[
 				{
+					"name" : "ADVANCED",
+					"value" : "1"
+				},
+				{
 					"name" : "HELPSTRING",
-					"value" : "No help, variable specified on the command line."
+					"value" : "Path to a program."
 				}
 			],
-			"type" : "UNINITIALIZED",
-			"value" : "/home/matheus/.local/share/JetBrains/Toolbox/apps/clion/bin/ninja/linux/x64/ninja"
+			"type" : "FILEPATH",
+			"value" : "/usr/bin/make"
 		},
 		{
 			"name" : "CMAKE_MODULE_LINKER_FLAGS",
@@ -715,7 +719,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "untitled"
+			"value" : "inode"
 		},
 		{
 			"name" : "CMAKE_RANLIB",
@@ -1026,6 +1030,42 @@
 			"value" : "TRUE"
 		},
 		{
+			"name" : "inode_BINARY_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-debug"
+		},
+		{
+			"name" : "inode_IS_TOP_LEVEL",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "ON"
+		},
+		{
+			"name" : "inode_SOURCE_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode"
+		},
+		{
 			"name" : "untitled_BINARY_DIR",
 			"properties" : 
 			[
@@ -1035,7 +1075,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/untitled/cmake-build-debug"
+			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-debug"
 		},
 		{
 			"name" : "untitled_IS_TOP_LEVEL",
@@ -1059,7 +1099,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/untitled"
+			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode"
 		}
 	],
 	"kind" : "cache",
