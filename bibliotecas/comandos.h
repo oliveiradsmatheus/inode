@@ -1,9 +1,9 @@
 void limparTela() {
-#ifdef __linux__
-    system("clear");
-#else
-    system("cls");
-#endif
+    #ifdef __linux__
+        system("clear");
+    #else
+        system("cls");
+    #endif
 }
 
 char eComando(char *comando) {

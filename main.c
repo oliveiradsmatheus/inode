@@ -6,8 +6,10 @@
 
 int main(void) {
     int tamDisco;
+
     printf("Informe o tamanho do Disco: ");
     scanf("%d", &tamDisco);
     executar(tamDisco);
+
     return 0;
 }
