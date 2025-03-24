@@ -48,8 +48,10 @@ char eComando(char *comando) {
         return 11;
     else if (!strcmp(comandoPrincipal, "vi"))
         return 12;
-    else if (!strcmp(comandoPrincipal, "exit") || !strcmp(comandoPrincipal, "poweroff"))
+    else if (!strcmp(comandoPrincipal, "pwd"))
         return 13;
+    else if (!strcmp(comandoPrincipal, "exit") || !strcmp(comandoPrincipal, "poweroff"))
+        return 14;
     return -1;
 }
 
@@ -82,7 +84,7 @@ void executarComando(char *comando, char c) {
         case 9:
             break;
         case 10:
-            if (!strcmp(comando,"clear"))
+            if (!strcmp(comando, "clear"))
                 limparTela();
             else
                 printf("Opcao nao existente para o comando clear\n");
@@ -90,57 +92,18 @@ void executarComando(char *comando, char c) {
         case 11:
             break;
         case 12:
-            limparTela();
+            break;
+        case 13:
+            break;
     }
-
-    while (i < strlen(comando) && comando[i] == ' ')
-        i++;
-    while (i < strlen(comando) && comando[i] > 96 && comando[i] < 123)
-        comandoPrincipal[j++] = comando[i++];
-    /*
-        if (!strcmp(comandoPrincipal, "ls"))
-            return 0;
-        else if (!strcmp(comandoPrincipal, "mkdir"))
-            return 1;
-        else if (!strcmp(comandoPrincipal, "rmdir"))
-            return 2;
-        else if (
-            !strcmp(comandoPrincipal, "rm"))
-            return 3;
-        else if (
-            !strcmp(comandoPrincipal, "cd"))
-            return 4;
-        else if (
-            !strcmp(comandoPrincipal, "link"))
-            return 5;
-        else if (
-            !strcmp(comandoPrincipal, "bad"))
-            return 6;
-        else if (
-            !strcmp(comandoPrincipal, "unlink"))
-            return 7;
-        else if (
-            !strcmp(comandoPrincipal, "touch"))
-            return 8;
-        else if (
-            !strcmp(comandoPrincipal, "df"))
-            return 9;
-        else if (
-            !strcmp(comandoPrincipal, "clear"))
-            return 10;
-        else if (!strcmp(comandoPrincipal, "chmod"))
-            return 11;
-        else if (!strcmp(comandoPrincipal, "vi"))
-            return 12;*/
 }
 
 void iniciarBlocos(char *usuario, int *blocos) {
     //criar root, dev, bin, home... respectivos inodes e pilhas de blocos livres.
 }
 
-void execTerminal(char *usuario, int tamDisco) {
-    Bloco blocos[tamDisco];
-    char comando[30], diretorio[14]="~/home", c;
+void execTerminal(char *usuario, int tamDisco, int inodeRaiz) {
+    char comando[30], diretorio[14] = "~/home", c;
 
     //iniciarBlocos(usuario, blocos);
     do {
@@ -165,16 +128,23 @@ char login(char *senha) {
     return !strcmp(senha, "123");
 }
 
-void executar(void) {
-    int tamDisco;
+int criarRaiz(Bloco *disco) {
+    char permissao[10];
+
+    return 1;
+}
+
+void executar(int tamDisco) {
+    Bloco disco[tamDisco];
+    int inodeRaiz;
     char usuario[20], senha[20];
 
-    printf("Informe o tamanho do Disco: ");
-    scanf("%d", &tamDisco);
     limparTela();
     do {
         leitura(usuario, senha);
     } while (!login(senha));
     limparTela();
-    execTerminal(usuario, tamDisco);
+    inicializarDisco(disco, tamDisco);
+    inodeRaiz = criarRaiz(disco);
+    execTerminal(usuario, tamDisco, inodeRaiz);
 }

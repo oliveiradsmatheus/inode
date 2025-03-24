@@ -5,6 +5,9 @@
 #include "bibliotecas/comandos.h"
 
 int main(void) {
-    executar();
+    int tamDisco;
+    printf("Informe o tamanho do Disco: ");
+    scanf("%d", &tamDisco);
+    executar(tamDisco);
     return 0;
 }
