@@ -1,3 +1,5 @@
+#define CABECA_LISTA_BL 0;
+
 void limparTela() {
 #ifdef __linux__
     system("clear");
@@ -7,7 +9,7 @@ void limparTela() {
 }
 
 char eComando(char *comando) {
-    int i = 0, j = 0;;
+    int i = 0, j = 0;
     char comandoPrincipal[30] = "";
 
     while (i < strlen(comando) && comando[i] == ' ')
@@ -50,8 +52,10 @@ char eComando(char *comando) {
         return 12;
     else if (!strcmp(comandoPrincipal, "pwd"))
         return 13;
-    else if (!strcmp(comandoPrincipal, "exit") || !strcmp(comandoPrincipal, "poweroff"))
+    else if (!strcmp(comandoPrincipal, "tree"))
         return 14;
+    else if (!strcmp(comandoPrincipal, "exit") || !strcmp(comandoPrincipal, "poweroff"))
+        return 15;
     return -1;
 }
 
@@ -95,7 +99,36 @@ void executarComando(char *comando, char c) {
             break;
         case 13:
             break;
+        case 14:
+            break;
     }
+}
+
+void exibirPilhas(Bloco *disco) {
+    int i =0;
+
+    while (i != -1) {
+        printf("Pilha [%d] \n", disco[i].listaBlocosLivres.topo);
+        printf("End. Pilha [%d] \n",  disco[i].listaBlocosLivres.endProx);
+        i = disco[i].listaBlocosLivres.endProx;
+    }
+}
+
+void criarListaBlocosLivres(Bloco *disco, int tamDisco) {
+    int i, j, qtde, num;
+
+    i = CABECA_LISTA_BL;
+    qtde = tamDisco/10;
+    j = qtde;
+    while (i < qtde - 1) {
+        for (num = 0; num < 10; num++)
+            disco[num].listaBlocosLivres.topo = j++;
+        disco[i].listaBlocosLivres.endProx = i + 1;
+        i++;
+    }
+    for (num = 0; num < 10; num++)
+        disco[num].listaBlocosLivres.topo = j++;
+    disco[i].listaBlocosLivres.endProx = -1;
 }
 
 void iniciarBlocos(char *usuario, int *blocos) {
@@ -145,6 +178,8 @@ void executar(int tamDisco) {
     } while (!login(senha));
     limparTela();
     inicializarDisco(disco, tamDisco);
+    criarListaBlocosLivres(disco, tamDisco);
+    exibirPilhas(disco);
     inodeRaiz = criarRaiz(disco);
     execTerminal(usuario, tamDisco, inodeRaiz);
 }

@@ -23,21 +23,23 @@ struct inode {
     int endDuploIndireto;
     int endTriploIndireto;
 };
-
 typedef struct inode Inode;
 
-struct arquivo {
-    int inode;
-    char nome[14];
+struct softlink {
+    char caminho[50];
 };
+typedef struct softlink SoftLink;
 
-typedef struct arquivo Arquivo;
+struct entrada {
+    char nome[14];
+    int endInode;
+};
+typedef struct entrada Entrada;
 
 struct diretorio {
-    Arquivo arquivo[10];
+    Entrada arquivo[10];
     int TL;
 };
-
 typedef struct diretorio Diretorio;
 
 struct listaBlocosLivres {
@@ -45,7 +47,6 @@ struct listaBlocosLivres {
     int end;
     int endProx;
 };
-
 typedef struct listaBlocosLivres ListaBlocosLivres;
 
 struct bloco {
@@ -53,8 +54,8 @@ struct bloco {
     Inode inode;
     Diretorio dir;
     ListaBlocosLivres listaBlocosLivres;
+    SoftLink softLink;
 };
-
 typedef struct bloco Bloco;
 
 void inicializarBloco(Bloco bloco) {
@@ -62,6 +63,7 @@ void inicializarBloco(Bloco bloco) {
     bloco.dir.TL = 0;
     bloco.inode.permissao[0] = '\0';
     bloco.listaBlocosLivres.topo = -1;
+    bloco.softLink.caminho[0] = '\0';
 }
 
 void inicializarDisco(Bloco *disco, int tamDisco) {
