@@ -4,6 +4,7 @@
 CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/main.c \
   /home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/bloco.h \
   /home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/comandos.h \
+  /home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/sistema.h \
   /usr/include/alloca.h \
   /usr/include/bits/atomic_wide_counter.h \
   /usr/include/bits/byteswap.h \
@@ -119,23 +120,7 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
 
 /usr/include/bits/types/__locale_t.h:
 
-/usr/include/features.h:
-
-/usr/include/bits/long-double.h:
-
-/usr/include/bits/flt-eval-method.h:
-
-/usr/include/bits/typesizes.h:
-
-/usr/include/bits/struct_rwlock.h:
-
-/usr/include/bits/types/struct_FILE.h:
-
-/usr/include/bits/libm-simd-decl-stubs.h:
-
-/usr/include/bits/mathcalls-macros.h:
-
-/usr/include/bits/stdint-intn.h:
+/usr/include/bits/types/__fpos_t.h:
 
 /usr/include/bits/uintn-identity.h:
 
@@ -153,9 +138,9 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
 
 /usr/include/bits/floatn-common.h:
 
-/usr/include/bits/types/__fpos_t.h:
-
 /usr/include/bits/pthreadtypes.h:
+
+/usr/include/bits/byteswap.h:
 
 /home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/bloco.h:
 
@@ -175,7 +160,25 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
 
 /home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/comandos.h:
 
-/usr/include/bits/byteswap.h:
+/usr/include/bits/flt-eval-method.h:
+
+/usr/include/features.h:
+
+/usr/include/bits/long-double.h:
+
+/usr/include/bits/typesizes.h:
+
+/usr/include/bits/struct_rwlock.h:
+
+/usr/include/bits/types/struct_FILE.h:
+
+/usr/include/bits/libm-simd-decl-stubs.h:
+
+/usr/include/bits/mathcalls-macros.h:
+
+/usr/include/bits/stdint-intn.h:
+
+/home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/sistema.h:
 
 /usr/include/bits/endian.h:
 

@@ -31,7 +31,7 @@
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 11,
+				"line" : 12,
 				"parent" : 0
 			}
 		]
@@ -103,7 +103,8 @@
 			[
 				1,
 				2,
-				3
+				3,
+				4
 			]
 		}
 	],
@@ -128,6 +129,11 @@
 		{
 			"backtrace" : 1,
 			"path" : "bibliotecas/comandos.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "bibliotecas/sistema.h",
 			"sourceGroupIndex" : 1
 		}
 	],

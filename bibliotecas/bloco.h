@@ -1,6 +1,9 @@
 #define CABECA_LISTA_BL 0;
 #define MAXIMO_BL 9;
-#include <math.h>
+#define PERMISSAO_ARQUIVO 644;
+#define PERMISSAO_DIRETORIO 755;
+#define PERMISSAO_LINK 777;
+#define MAX_DIR 10;
 
 struct inode {
     /*
@@ -59,7 +62,7 @@ struct listaBlocosLivres {
 typedef struct listaBlocosLivres ListaBlocosLivres;
 
 struct bloco {
-    int bad;
+    char bad;
     Inode inode;
     Diretorio dir;
     ListaBlocosLivres listaBlocosLivres;
@@ -92,16 +95,28 @@ void ligarListaBlocosLivres(Bloco *bloco, int qtde) {
     bloco[i - 1].listaBlocosLivres.endProxLista = -1;
 }
 
-int vazia(Bloco disco) {
+char bad(Bloco bloco) {
+    return bloco.bad;
+}
+
+char listaVazia(Bloco disco) {
     return disco.listaBlocosLivres.topo == -1;
 }
 
-int cheia(Bloco disco) {
+char listaCheia(Bloco disco) {
     return disco.listaBlocosLivres.topo == MAXIMO_BL;
 }
 
-int fim(Bloco disco) {
+char fimLista(Bloco disco) {
     return disco.listaBlocosLivres.endProxLista == -1;
+}
+
+char dirVazio(Bloco disco) {
+    return disco.dir.TL == 0;
+}
+
+char dirCheio(Bloco disco) {
+    return disco.dir.TL == MAX_DIR;
 }
 
 int popBlocoLivre(Bloco *disco) {
@@ -109,12 +124,13 @@ int popBlocoLivre(Bloco *disco) {
 
     end = CABECA_LISTA_BL;
     endProx = disco[end].listaBlocosLivres.endProxLista;
-    while (vazia(disco[end])) {
+    while (listaVazia(disco[end])) {
         end = endProx;
         endProx = disco[end].listaBlocosLivres.endProxLista;
     }
-    if (!vazia(disco[end]))
+    if (!listaVazia(disco[end]))
         return disco[end].listaBlocosLivres.end[disco[end].listaBlocosLivres.topo--];
+    return -1;
 }
 
 void pushBlocoLivre(Bloco *disco, int bloco) {
@@ -122,11 +138,11 @@ void pushBlocoLivre(Bloco *disco, int bloco) {
 
     end = CABECA_LISTA_BL;
     endProx = disco[end].listaBlocosLivres.endProxLista;
-    while (vazia(disco[end]) && !fim(disco[end])) {
+    while (listaVazia(disco[end]) && !fimLista(disco[end])) {
         end = endProx;
         endProx = disco[end].listaBlocosLivres.endProxLista;
     }
-    if (cheia(disco[end]))
+    if (listaCheia(disco[end]))
         end -= 1;
     disco[end].listaBlocosLivres.end[++disco[end].listaBlocosLivres.topo] = bloco;
 }
@@ -150,17 +166,37 @@ void exibirPilhas(Bloco *disco) {
 }
 
 void criarListaBlocosLivres(Bloco *disco, int tamDisco) {
-    int i, qtde;
+    int i, j, qtde, bloco, aux;
 
-    i = CABECA_LISTA_BL;
     qtde = ceil(((float) tamDisco) / 11);
     ligarListaBlocosLivres(disco, qtde);
-    exibirPilhas(disco);
-    i = tamDisco - 1;
-    while (i >= qtde)
-        pushBlocoLivre(disco, i--);
+    bloco = qtde;
+    i = CABECA_LISTA_BL;
+    while (i < qtde - 1) {
+        for (j = 0; j < 10 && bloco < tamDisco; j++) {
+            disco[i].listaBlocosLivres.topo++;
+            disco[i].listaBlocosLivres.end[9 - j] = bloco++;
+        }
+        i++;
+    }
+    aux = bloco;
+    bloco = tamDisco - 1;
+    while (bloco >= aux) {
+        disco[i].listaBlocosLivres.end[++disco[i].listaBlocosLivres.topo] = bloco--;
+    }
+    i = CABECA_LISTA_BL;
+    while (disco[i].listaBlocosLivres.endProxLista != -1)
+        i++;
+    if (listaVazia(disco[i]))
+        disco[i-1].listaBlocosLivres.endProxLista = -1;
 }
 
 void iniciarBlocos(char *usuario, int *blocos) {
     //criar root, dev, bin, home... respectivos inodes e pilhas de blocos livres.
 }
+/*
+int criarInode (Bloco *disco) {
+    int endBloco;
+
+    return endBloco;
+}*/

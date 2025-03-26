@@ -4,6 +4,7 @@
 #include <string.h>
 #include "bibliotecas/bloco.h"
 #include "bibliotecas/comandos.h"
+#include "bibliotecas/sistema.h"
 
 int main(void) {
     int tamDisco;

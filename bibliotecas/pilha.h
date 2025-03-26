@@ -28,15 +28,15 @@ char elementoTopo(Pilha PM, int NP) {
     return PM.PILHA[PM.TOPO[NP]];
 }
 
-int vazia(Pilha PM, int NP) {
+int listaVazia(Pilha PM, int NP) {
     return (PM.TOPO[NP] + 1 == PM.BASE[NP]);
 }
 
-int cheia(Pilha PM, int NP) {
+int listaCheia(Pilha PM, int NP) {
     return (PM.BASE[NP + 1] == PM.TOPO[NP] + 1);
 }
 
 void exibir(Pilha PM, int NP) {
-    while (!vazia(PM, NP))
+    while (!listaVazia(PM, NP))
         printf("\n[%c]", pop(&PM, NP));
 }
