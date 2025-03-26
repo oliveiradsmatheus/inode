@@ -6,6 +6,20 @@ void limparTela() {
 #endif
 }
 
+void listar(Bloco *disco, int end) {
+    int i, j, endAtual = end;
+
+    i = 0;
+    endAtual = disco[end].inode.endDireto[i];
+    while (endAtual != endNulo() && i < 5) {
+        for (j = 2; j < disco[endAtual].dir.TL ; j++)
+            printf("%s     ", disco[endAtual].dir.arquivo[j].nome);
+        printf("\n");
+        i++;
+        endAtual = disco[end].inode.endDireto[i];
+    }
+}
+
 char eComando(char *comando) {
     int i = 0, j = 0;
     char comandoPrincipal[30] = "";
@@ -57,7 +71,7 @@ char eComando(char *comando) {
     return -1;
 }
 
-void executarComando(char *comando, char c) {
+void executarComando(Bloco *disco, int end, char *comando, char c) {
     int i = 0, j = 0;;
     char comandoPrincipal[30] = "";
 
@@ -68,6 +82,8 @@ void executarComando(char *comando, char c) {
 
     switch (c) {
         case 0:
+            if (!strcmp(comando, "ls"))
+                listar(disco, end);
             break;
         case 1:
             break;

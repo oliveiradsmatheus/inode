@@ -6,6 +6,7 @@
 #define QTDE_MAX_DIR 10
 #define TAM_MAX_NOME 14
 #define QTDE_INODE_DIRETO 5
+#define QTDE_INODE_INDIRETO 5
 
 struct inode {
     /*
@@ -34,6 +35,13 @@ struct inode {
 };
 
 typedef struct inode Inode;
+
+struct inodeindireto {
+    int endInd[QTDE_INODE_INDIRETO];
+    int TL;
+};
+
+typedef struct inodeindireto InodeInd;
 
 struct softlink {
     char caminho[50];
@@ -66,6 +74,7 @@ typedef struct listaBlocosLivres ListaBlocosLivres;
 struct bloco {
     char bad;
     Inode inode;
+    InodeInd inodeIndireto;
     Diretorio dir;
     ListaBlocosLivres listaBlocosLivres;
     SoftLink softLink;
@@ -202,8 +211,7 @@ void pushBlocoLivre(Bloco *disco, int bloco) {
     disco[end].listaBlocosLivres.end[++disco[end].listaBlocosLivres.topo] = bloco;
 }
 
-void exibirPilhas(Bloco *disco) {
-    // Apenas para teste.
+void exibirPilhas(Bloco *disco) {     // Apenas para teste.
     int i, j;
 
     i = CABECA_LISTA_BL;
@@ -286,6 +294,31 @@ void alterarPermissao(Bloco *disco, int end, char *permissao) {
         strcpy(disco[end].inode.permissao, permissao);
 }
 
+int criarInodeIS(Bloco *disco) {
+    int i = 0, bloco;
+
+    bloco = popBlocoLivre(disco);
+    for (i = 0; i < QTDE_INODE_INDIRETO; i++)
+        disco[bloco].inodeIndireto.endInd[i] = -1;
+    disco[bloco].inodeIndireto.TL = 0;
+
+    return bloco;
+}
+
+void inserirInodeIS (Bloco *disco, int endInode, int endInodeInd, int qtBlocos) {
+    int utilizados = 0;
+
+
+}
+
+int criarInodeID() {
+    return 0;
+}
+
+int criarInodeIT() {
+    return 0;
+}
+
 int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPai, char *caminho) {
     int endBloco, blocosNec, blocosRest, utilizados = 0, i;
     char permissao[11], data[30];
@@ -342,28 +375,44 @@ int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPa
         if (tipoArq == 'd') {
             adicionarArquivo(disco, disco[endBloco].inode.endDireto[0], ".", endBloco);
             adicionarArquivo(disco, disco[endBloco].inode.endDireto[0], "..", endPai);
-        } else if (tipoArq == 'l') {
+        } else if (tipoArq == 'l')
             strcpy(disco[disco[endBloco].inode.endDireto[0]].softLink.caminho, caminho);
-        }
         return endBloco;
     }
     return endNulo();
 }
 
-void adicionarEntrada(Bloco *disco, int end, char *entrada) {
-    int i;
+void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, char tipo, int tam) {
+    int i, j;
+    char flag = 0;
 
     i = 0;
     while (disco[disco[end].inode.endDireto[i]].dir.TL > QTDE_MAX_DIR)
         i++;
-    if (i < QTDE_INODE_DIRETO) {
-        disco[end].inode.endDireto[i] = popBlocoLivre(disco);
+    if (i < QTDE_INODE_DIRETO - 1) {
+        if (disco[disco[end].inode.endDireto[i]].dir.TL < QTDE_MAX_DIR) {
+            strcpy(disco[disco[end].inode.endDireto[i]].dir.arquivo[disco[disco[end].inode.endDireto[i]].dir.TL].nome,
+                   nomeEntrada);
+            disco[disco[end].inode.endDireto[i]].dir.arquivo[disco[disco[end].inode.endDireto[i]].dir.TL++].endInode =
+                    popBlocoLivre(disco);
+            adicionarArquivo(disco, criarInode(disco, usuario, tipo, tam, end, ""), nomeEntrada,
+                             disco[end].inode.endDireto[i]);
+        }/*
+        for (j = 0; j < 10; j++)
+            printf("%d->%s - %d\n",j, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome,
+                   disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode);*/
     } else {
+        printf("nao cabe mais");
         // criar um ponteiro indireto
     }
 }
 
-void adicionarEntradasRaiz(Bloco *disco, int endRaiz) {
-    // adicionar home, etc, bin, usr, lib...
-    adicionarEntrada(disco, endRaiz, "home");
+void adicionarEntradasRaiz(Bloco *disco, int endRaiz, char *usuario) {
+    adicionarEntrada(disco, endRaiz, usuario, "bin", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "boot", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "dev", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "etc", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "home", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "lib", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "opt", 'd', 1);
 }

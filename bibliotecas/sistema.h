@@ -1,13 +1,14 @@
 int criarRaiz(Bloco *disco, char *usuario) {
-    int raiz = popBlocoLivre(disco);
+    int raiz;
 
-    raiz = criarInode(disco, usuario, 'd', 1, raiz, "");
+    raiz = criarInode(disco, usuario, 'd', 1, -1, "");
     return raiz;
 }
 
 void execTerminal(Bloco *disco, int endRaiz, char *usuario, int tamDisco) {
-    char c, comando[30], caminho[50] = "/";//, diretorio[14], raiz;
-
+    char c, comando[30], caminho[50] = "/"; //, diretorio[14], raiz;
+    char nome[30];
+    int i, end = endRaiz;
     //raiz = disco[endRaiz].inode.endDireto[0];
     //iniciarBlocos(usuario, blocos);
     do {
@@ -15,7 +16,7 @@ void execTerminal(Bloco *disco, int endRaiz, char *usuario, int tamDisco) {
         scanf(" %[^\n]", comando);
         c = eComando(comando);
         if (c != -1)
-            executarComando(comando, c);
+            executarComando(disco, end, comando, c);
         else
             printf("bash: %s: comando não encontrado\n", comando);
     } while (strcmp(comando, "exit") && strcmp(comando, "poweroff"));
@@ -44,7 +45,8 @@ void executar(int tamDisco) {
     limparTela();
     inicializarDisco(disco, tamDisco);
     criarListaBlocosLivres(disco, tamDisco);
+    //exibirPilhas(disco);
     endRaiz = criarRaiz(disco, usuario);
-    adicionarEntradasRaiz(disco, endRaiz);
+    adicionarEntradasRaiz(disco, endRaiz, usuario);
     execTerminal(disco, endRaiz, usuario, tamDisco);
 }
