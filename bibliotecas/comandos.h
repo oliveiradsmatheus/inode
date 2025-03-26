@@ -89,7 +89,7 @@ void executarComando(char *comando, char c) {
             if (!strcmp(comando, "clear"))
                 limparTela();
             else
-                printf("Opcao nao existente para o comando clear\n");
+                printf("Opção não existente para o comando clear\n");
             break;
         case 11:
             break;

@@ -1,22 +1,23 @@
-int criarRaiz(Bloco *disco) {
-    int raiz;
-    char permissao[10];
+int criarRaiz(Bloco *disco, char *usuario) {
+    int raiz = popBlocoLivre(disco);
 
-    return 1;
+    raiz = criarInode(disco, usuario, 'd', 1, raiz, "");
+    return raiz;
 }
 
-void execTerminal(char *usuario, int tamDisco, int inodeRaiz) {
-    char comando[30], diretorio[14] = "~/home", c;
+void execTerminal(Bloco *disco, int endRaiz, char *usuario, int tamDisco) {
+    char c, comando[30], caminho[50] = "/";//, diretorio[14], raiz;
 
+    //raiz = disco[endRaiz].inode.endDireto[0];
     //iniciarBlocos(usuario, blocos);
     do {
-        printf("%s@linux: %s $ ", usuario, diretorio);
+        printf("%s@linux: %s $ ", usuario, caminho);
         scanf(" %[^\n]", comando);
         c = eComando(comando);
         if (c != -1)
             executarComando(comando, c);
         else
-            printf("bash: %s: comando nao encontrado\n", comando);
+            printf("bash: %s: comando não encontrado\n", comando);
     } while (strcmp(comando, "exit") && strcmp(comando, "poweroff"));
 }
 
@@ -33,10 +34,8 @@ void leitura(char *usuario, char *senha) {
 
 void executar(int tamDisco) {
     Bloco disco[tamDisco];
-    int inodeRaiz, teste;
+    int endRaiz;
     char usuario[20], senha[20];
-
-    int i;
 
     limparTela();
     do {
@@ -45,12 +44,7 @@ void executar(int tamDisco) {
     limparTela();
     inicializarDisco(disco, tamDisco);
     criarListaBlocosLivres(disco, tamDisco);
-    exibirPilhas(disco);
-    /*for (inodeRaiz = 0; inodeRaiz < 5; inodeRaiz++ ) {
-        teste = popBlocoLivre(disco);
-        printf("%d\n",teste);
-    }
-    exibirPilhas(disco);*/
-    inodeRaiz = criarRaiz(disco);
-    execTerminal(usuario, tamDisco, inodeRaiz);
+    endRaiz = criarRaiz(disco, usuario);
+    adicionarEntradasRaiz(disco, endRaiz);
+    execTerminal(disco, endRaiz, usuario, tamDisco);
 }

@@ -38,7 +38,10 @@ CMakeFiles/inode.dir/main.c.o: \
  /usr/include/bits/struct_rwlock.h /usr/include/alloca.h \
  /usr/include/bits/stdlib-float.h /usr/include/string.h \
  /usr/include/bits/types/locale_t.h /usr/include/bits/types/__locale_t.h \
- /usr/include/strings.h \
+ /usr/include/strings.h /usr/include/time.h /usr/include/bits/time.h \
+ /usr/include/bits/types/struct_tm.h \
+ /usr/include/bits/types/struct_itimerspec.h /usr/include/locale.h \
+ /usr/include/bits/locale.h \
  /home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/bloco.h \
  /home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/comandos.h \
  /home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/sistema.h
