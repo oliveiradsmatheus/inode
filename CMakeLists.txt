@@ -7,3 +7,5 @@ add_executable(inode main.c
         bibliotecas/bloco.h
         bibliotecas/pilha.h
         bibliotecas/comandos.h)
+
+target_link_libraries(inode m)

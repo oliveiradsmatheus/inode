@@ -1,5 +1,3 @@
-#define CABECA_LISTA_BL 0;
-
 void limparTela() {
 #ifdef __linux__
     system("clear");
@@ -104,37 +102,6 @@ void executarComando(char *comando, char c) {
     }
 }
 
-void exibirPilhas(Bloco *disco) {
-    int i =0;
-
-    while (i != -1) {
-        printf("Pilha [%d] \n", disco[i].listaBlocosLivres.topo);
-        printf("End. Pilha [%d] \n",  disco[i].listaBlocosLivres.endProx);
-        i = disco[i].listaBlocosLivres.endProx;
-    }
-}
-
-void criarListaBlocosLivres(Bloco *disco, int tamDisco) {
-    int i, j, qtde, num;
-
-    i = CABECA_LISTA_BL;
-    qtde = tamDisco/10;
-    j = qtde;
-    while (i < qtde - 1) {
-        for (num = 0; num < 10; num++)
-            disco[num].listaBlocosLivres.topo = j++;
-        disco[i].listaBlocosLivres.endProx = i + 1;
-        i++;
-    }
-    for (num = 0; num < 10; num++)
-        disco[num].listaBlocosLivres.topo = j++;
-    disco[i].listaBlocosLivres.endProx = -1;
-}
-
-void iniciarBlocos(char *usuario, int *blocos) {
-    //criar root, dev, bin, home... respectivos inodes e pilhas de blocos livres.
-}
-
 void execTerminal(char *usuario, int tamDisco, int inodeRaiz) {
     char comando[30], diretorio[14] = "~/home", c;
 
@@ -169,8 +136,10 @@ int criarRaiz(Bloco *disco) {
 
 void executar(int tamDisco) {
     Bloco disco[tamDisco];
-    int inodeRaiz;
+    int inodeRaiz, teste;
     char usuario[20], senha[20];
+
+    int i;
 
     limparTela();
     do {
@@ -180,6 +149,11 @@ void executar(int tamDisco) {
     inicializarDisco(disco, tamDisco);
     criarListaBlocosLivres(disco, tamDisco);
     exibirPilhas(disco);
+    /*for (inodeRaiz = 0; inodeRaiz < 5; inodeRaiz++ ) {
+        teste = popBlocoLivre(disco);
+        printf("%d\n",teste);
+    }
+    exibirPilhas(disco);*/
     inodeRaiz = criarRaiz(disco);
     execTerminal(usuario, tamDisco, inodeRaiz);
 }
