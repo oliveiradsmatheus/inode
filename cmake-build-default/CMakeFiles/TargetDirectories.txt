@@ -1,3 +1,0 @@
-/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-default/CMakeFiles/inode.dir
-/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-default/CMakeFiles/edit_cache.dir
-/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-default/CMakeFiles/rebuild_cache.dir

@@ -16,7 +16,7 @@ void execTerminal(Bloco *disco, int endRaiz, char *usuario, int tamDisco) {
         scanf(" %[^\n]", comando);
         c = eComando(comando);
         if (c != -1)
-            executarComando(disco, end, comando, c);
+            executarComando(disco, end, comando, c, tamDisco);
         else
             printf("bash: %s: comando não encontrado\n", comando);
     } while (strcmp(comando, "exit") && strcmp(comando, "poweroff"));

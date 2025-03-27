@@ -12,7 +12,7 @@ void listar(Bloco *disco, int end) {
     i = 0;
     endAtual = disco[end].inode.endDireto[i];
     while (endAtual != endNulo() && i < 5) {
-        for (j = 2; j < disco[endAtual].dir.TL ; j++)
+        for (j = 2; j < disco[endAtual].dir.TL; j++)
             printf("%s     ", disco[endAtual].dir.arquivo[j].nome);
         printf("\n");
         i++;
@@ -71,7 +71,7 @@ char eComando(char *comando) {
     return -1;
 }
 
-void executarComando(Bloco *disco, int end, char *comando, char c) {
+void executarComando(Bloco *disco, int end, char *comando, char c, int tamDisco) {
     int i = 0, j = 0;;
     char comandoPrincipal[30] = "";
 
@@ -94,6 +94,7 @@ void executarComando(Bloco *disco, int end, char *comando, char c) {
         case 4:
             break;
         case 6:
+            setBad(disco, comando, tamDisco);
             break;
         case 7:
             break;

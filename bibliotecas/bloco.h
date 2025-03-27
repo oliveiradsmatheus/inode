@@ -3,7 +3,7 @@
 #define PERMISSAO_ARQUIVO "rw-r--r--"
 #define PERMISSAO_DIRETORIO "rwxr-xr-x"
 #define PERMISSAO_LINK "rwxrwxrwx"
-#define QTDE_MAX_DIR 10
+#define QTDE_MAX_DIR 12
 #define TAM_MAX_NOME 14
 #define QTDE_INODE_DIRETO 5
 #define QTDE_INODE_INDIRETO 5
@@ -57,7 +57,7 @@ struct entrada {
 typedef struct entrada Entrada;
 
 struct diretorio {
-    Entrada arquivo[12]; // pai, o próprio diretório e 10 arquivos.
+    Entrada arquivo[QTDE_MAX_DIR]; // pai, o próprio diretório e 10 arquivos.
     int TL;
 };
 
@@ -192,8 +192,11 @@ int popBlocoLivre(Bloco *disco) {
         end = endProx;
         endProx = disco[end].listaBlocosLivres.endProxLista;
     }
-    if (!listaVazia(disco[end]))
+    if (!listaVazia(disco[end])) {
+        if (bad(disco[end]))
+            return popBlocoLivre(disco);
         return disco[end].listaBlocosLivres.end[disco[end].listaBlocosLivres.topo--];
+    }
     return endNulo();
 }
 
@@ -211,7 +214,8 @@ void pushBlocoLivre(Bloco *disco, int bloco) {
     disco[end].listaBlocosLivres.end[++disco[end].listaBlocosLivres.topo] = bloco;
 }
 
-void exibirPilhas(Bloco *disco) {     // Apenas para teste.
+void exibirPilhas(Bloco *disco) {
+    // Apenas para teste.
     int i, j;
 
     i = CABECA_LISTA_BL;
@@ -271,6 +275,23 @@ void iniciarBlocos(char *usuario, int *blocos) {
     //criar root, dev, bin, home... respectivos inodes e pilhas de blocos livres.
 }
 
+void setBad(Bloco *disco, char *comando, int tamDisco) {
+    char bloco[8];
+    int i = 0, j = 0, blocoN;
+
+    while (i < strlen(comando) && comando[i] != 'd')
+        i++;
+    i++;
+    while (i < strlen(comando) && comando[i] == ' ')
+        i++;
+    while (i < strlen(comando) && comando[i] >= '0' && comando[i] <= '9')
+        bloco[j++] = comando[i++];
+    bloco[j] = '\0';
+    blocoN = atoi(bloco);
+    if (blocoN < tamDisco)
+        disco[blocoN].bad = 1;
+}
+
 char permissaoValida(char *permissao) {
     int i = 0;
     char valida = 1;
@@ -305,10 +326,10 @@ int criarInodeIS(Bloco *disco) {
     return bloco;
 }
 
-void inserirInodeIS (Bloco *disco, int endInode, int endInodeInd, int qtBlocos) {
+void inserirInodeIS(Bloco *disco, int endInode, int endInodeInd, int qtBlocos) {
     int utilizados = 0;
 
-
+    //blocosRestantes
 }
 
 int criarInodeID() {
@@ -362,7 +383,6 @@ int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPa
         }
         blocosRest = blocosNec - utilizados;
         if (blocosRest > 0) {
-            // indireto simples
         }
         if (blocosRest > 0) {
             // indireto duplo
@@ -383,13 +403,12 @@ int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPa
 }
 
 void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, char tipo, int tam) {
-    int i, j;
-    char flag = 0;
+    int i;
 
     i = 0;
     while (disco[disco[end].inode.endDireto[i]].dir.TL > QTDE_MAX_DIR)
         i++;
-    if (i < QTDE_INODE_DIRETO - 1) {
+    if (disco[disco[end].inode.endDireto[i]].dir.TL < QTDE_MAX_DIR - 1) {
         if (disco[disco[end].inode.endDireto[i]].dir.TL < QTDE_MAX_DIR) {
             strcpy(disco[disco[end].inode.endDireto[i]].dir.arquivo[disco[disco[end].inode.endDireto[i]].dir.TL].nome,
                    nomeEntrada);
@@ -397,10 +416,7 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
                     popBlocoLivre(disco);
             adicionarArquivo(disco, criarInode(disco, usuario, tipo, tam, end, ""), nomeEntrada,
                              disco[end].inode.endDireto[i]);
-        }/*
-        for (j = 0; j < 10; j++)
-            printf("%d->%s - %d\n",j, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome,
-                   disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode);*/
+        }
     } else {
         printf("nao cabe mais");
         // criar um ponteiro indireto
@@ -412,6 +428,9 @@ void adicionarEntradasRaiz(Bloco *disco, int endRaiz, char *usuario) {
     adicionarEntrada(disco, endRaiz, usuario, "boot", 'd', 1);
     adicionarEntrada(disco, endRaiz, usuario, "dev", 'd', 1);
     adicionarEntrada(disco, endRaiz, usuario, "etc", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "home", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "lib", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "opt", 'd', 1);
     adicionarEntrada(disco, endRaiz, usuario, "home", 'd', 1);
     adicionarEntrada(disco, endRaiz, usuario, "lib", 'd', 1);
     adicionarEntrada(disco, endRaiz, usuario, "opt", 'd', 1);

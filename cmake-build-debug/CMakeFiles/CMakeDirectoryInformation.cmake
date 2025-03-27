@@ -3,7 +3,7 @@
 
 # Relative path conversion top directories.
 set(CMAKE_RELATIVE_PATH_TOP_SOURCE "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode")
-set(CMAKE_RELATIVE_PATH_TOP_BINARY "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-default")
+set(CMAKE_RELATIVE_PATH_TOP_BINARY "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-debug")
 
 # Force unix paths in dependencies.
 set(CMAKE_FORCE_UNIX_PATHS 1)

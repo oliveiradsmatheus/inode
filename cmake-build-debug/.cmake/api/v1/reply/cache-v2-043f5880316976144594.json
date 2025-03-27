@@ -43,7 +43,7 @@
 				}
 			],
 			"type" : "STRING",
-			"value" : ""
+			"value" : "Debug"
 		},
 		{
 			"name" : "CMAKE_CACHEFILE_DIR",
@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-default"
+			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -415,7 +415,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-default/CMakeFiles/pkgRedirects"
+			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-debug/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -1039,7 +1039,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-default"
+			"value" : "/home/matheus/Documentos/Unoeste/Sistemas Operacionais II/inode/cmake-build-debug"
 		},
 		{
 			"name" : "inode_IS_TOP_LEVEL",
