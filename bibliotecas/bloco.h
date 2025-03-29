@@ -4,7 +4,7 @@
 #define PERMISSAO_DIRETORIO "rwxr-xr-x"
 #define PERMISSAO_LINK "rwxrwxrwx"
 #define QTDE_MAX_DIR 12
-#define TAM_MAX_NOME 14
+#define TAM_MAX_NOME 15
 #define QTDE_INODE_DIRETO 5
 #define QTDE_INODE_INDIRETO 5
 
@@ -81,6 +81,8 @@ struct bloco {
 };
 
 typedef struct bloco Bloco;
+
+int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPai, char *caminho);
 
 void horarioLocal(char *data) {
     time_t t;
@@ -215,7 +217,6 @@ void pushBlocoLivre(Bloco *disco, int bloco) {
 }
 
 void exibirPilhas(Bloco *disco) {
-    // Apenas para teste.
     int i, j;
 
     i = CABECA_LISTA_BL;
@@ -315,7 +316,7 @@ void alterarPermissao(Bloco *disco, int end, char *permissao) {
         strcpy(disco[end].inode.permissao, permissao);
 }
 
-int criarInodeIS(Bloco *disco) {
+int criarInodeInd(Bloco *disco) {
     int i = 0, bloco;
 
     bloco = popBlocoLivre(disco);
@@ -326,18 +327,56 @@ int criarInodeIS(Bloco *disco) {
     return bloco;
 }
 
-void inserirInodeIS(Bloco *disco, int endInode, int endInodeInd, int qtBlocos) {
+void inserirInodeIS(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, int inseridoT, char *usuario,
+                    char tipoArq) {
     int utilizados = 0;
 
-    //blocosRestantes
+
+    if (disco[endInodeInd].inodeIndireto.TL < QTDE_INODE_INDIRETO - inseridoT) {
+        int inicio = disco[endInodeInd].inodeIndireto.TL;
+        while (inicio < *qtBlocos && inicio < QTDE_INODE_INDIRETO - inseridoT) {
+            disco[endInodeInd].inodeIndireto.endInd[inicio] = popBlocoLivre(disco);
+            disco[endInodeInd].inodeIndireto.TL++;
+            utilizados++;
+            inicio++;
+        }
+    }
+    *qtBlocos = *qtBlocos - utilizados;
+    if (inseridoT && *qtBlocos > 0) {
+        disco[endInodeInd].inodeIndireto.endInd[disco[endInodeInd].inodeIndireto.TL] = criarInode(
+            disco, usuario, tipoArq, *qtBlocos, endInode, "");
+        if (disco[endInodeInd].inodeIndireto.endInd[disco[endInodeInd].inodeIndireto.TL] != endNulo())
+            disco[endInodeInd].inodeIndireto.TL++;
+    }
 }
 
-int criarInodeID() {
-    return 0;
+void inserirInodeID(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, int inseridoT, char *usuario,
+                    char tipoArq) {
+    if (disco[endInodeInd].inodeIndireto.TL < QTDE_INODE_INDIRETO) {
+        int inicio = disco[endInodeInd].inodeIndireto.TL;
+        while (inicio < *qtBlocos && inicio < QTDE_INODE_INDIRETO) {
+            if (disco[endInodeInd].inodeIndireto.endInd[inicio] == endNulo())
+                disco[endInodeInd].inodeIndireto.endInd[inicio] = criarInodeInd(disco);
+            inserirInodeIS(disco, endInode, disco[endInodeInd].inodeIndireto.endInd[inicio], &*qtBlocos, inseridoT,
+                           usuario, tipoArq);
+            disco[endInodeInd].inodeIndireto.TL++;
+            inicio++;
+        }
+    }
 }
 
-int criarInodeIT() {
-    return 0;
+void inserirInodeIT(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, char *usuario, char tipoArq) {
+    if (disco[endInodeInd].inodeIndireto.TL < QTDE_INODE_INDIRETO) {
+        int inicio = disco[endInodeInd].inodeIndireto.TL;
+        while (inicio < *qtBlocos && inicio < QTDE_INODE_INDIRETO) {
+            if (disco[endInodeInd].inodeIndireto.endInd[inicio] == endNulo())
+                disco[endInodeInd].inodeIndireto.endInd[inicio] = criarInodeInd(disco);
+            inserirInodeID(disco, endInode, disco[endInodeInd].inodeIndireto.endInd[inicio], &*qtBlocos, 1,
+                           usuario, tipoArq);
+            disco[endInodeInd].inodeIndireto.TL++;
+            inicio++;
+        }
+    }
 }
 
 int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPai, char *caminho) {
@@ -383,12 +422,19 @@ int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPa
         }
         blocosRest = blocosNec - utilizados;
         if (blocosRest > 0) {
+            if (disco[endBloco].inode.endSimplesIndireto == endNulo())
+                disco[endBloco].inode.endSimplesIndireto = criarInodeInd(disco);
+            inserirInodeIS(disco, endBloco, disco[endBloco].inode.endSimplesIndireto, &blocosRest, 0, usuario, tipoArq);
         }
         if (blocosRest > 0) {
-            // indireto duplo
+            if (disco[endBloco].inode.endDuploIndireto == endNulo())
+                disco[endBloco].inode.endDuploIndireto = criarInodeInd(disco);
+            inserirInodeID(disco, endBloco, disco[endBloco].inode.endDuploIndireto, &blocosRest, 0, usuario, tipoArq);
         }
         if (blocosRest > 0) {
-            // indireto triplo
+            if (disco[endBloco].inode.endTriploIndireto == endNulo())
+                disco[endBloco].inode.endTriploIndireto = criarInodeInd(disco);
+            inserirInodeIT(disco, endBloco, disco[endBloco].inode.endTriploIndireto, &blocosRest, usuario, tipoArq);
         }
         if (endPai == endNulo())
             endPai = endBloco;
@@ -406,20 +452,20 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
     int i;
 
     i = 0;
-    while (disco[disco[end].inode.endDireto[i]].dir.TL > QTDE_MAX_DIR)
+    while (dirCheio(disco[disco[end].inode.endDireto[i]]))
         i++;
-    if (disco[disco[end].inode.endDireto[i]].dir.TL < QTDE_MAX_DIR - 1) {
-        if (disco[disco[end].inode.endDireto[i]].dir.TL < QTDE_MAX_DIR) {
-            strcpy(disco[disco[end].inode.endDireto[i]].dir.arquivo[disco[disco[end].inode.endDireto[i]].dir.TL].nome,
-                   nomeEntrada);
-            disco[disco[end].inode.endDireto[i]].dir.arquivo[disco[disco[end].inode.endDireto[i]].dir.TL++].endInode =
-                    popBlocoLivre(disco);
-            adicionarArquivo(disco, criarInode(disco, usuario, tipo, tam, end, ""), nomeEntrada,
-                             disco[end].inode.endDireto[i]);
+    if (i < QTDE_INODE_DIRETO) {
+        if (disco[end].inode.endDireto[i] != -1) {
+            if (disco[disco[end].inode.endDireto[i]].dir.TL < QTDE_MAX_DIR)
+                adicionarArquivo(disco, disco[end].inode.endDireto[i], nomeEntrada,
+                                 criarInode(disco, usuario, tipo, tam, end, ""));
+        } else {
+            disco[end].inode.endDireto[i] = popBlocoLivre(disco);
+            adicionarArquivo(disco, disco[end].inode.endDireto[i], nomeEntrada,
+                             criarInode(disco, usuario, tipo, tam, end, ""));
         }
     } else {
-        printf("nao cabe mais");
-        // criar um ponteiro indireto
+
     }
 }
 
@@ -431,7 +477,103 @@ void adicionarEntradasRaiz(Bloco *disco, int endRaiz, char *usuario) {
     adicionarEntrada(disco, endRaiz, usuario, "home", 'd', 1);
     adicionarEntrada(disco, endRaiz, usuario, "lib", 'd', 1);
     adicionarEntrada(disco, endRaiz, usuario, "opt", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "home", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "lib", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "opt", 'd', 1);
+    /*adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);*/
 }

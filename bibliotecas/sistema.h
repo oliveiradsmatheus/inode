@@ -9,16 +9,16 @@ void execTerminal(Bloco *disco, int endRaiz, char *usuario, int tamDisco) {
     char c, comando[30], caminho[50] = "/"; //, diretorio[14], raiz;
     char nome[30];
     int i, end = endRaiz;
-    //raiz = disco[endRaiz].inode.endDireto[0];
-    //iniciarBlocos(usuario, blocos);
     do {
         printf("%s@linux: %s $ ", usuario, caminho);
         scanf(" %[^\n]", comando);
         c = eComando(comando);
         if (c != -1)
-            executarComando(disco, end, comando, c, tamDisco);
+            executarComando(disco, usuario, end, comando, c, tamDisco);
         else
             printf("bash: %s: comando não encontrado\n", comando);
+        //exibirPilhas(disco);
+        //printf("Blocos livres: %d\n", qtdeBlocosLivres(disco));
     } while (strcmp(comando, "exit") && strcmp(comando, "poweroff"));
 }
 
