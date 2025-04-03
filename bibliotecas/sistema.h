@@ -5,20 +5,42 @@ int criarRaiz(Bloco *disco, char *usuario) {
     return raiz;
 }
 
-void execTerminal(Bloco *disco, int endRaiz, char *usuario, int tamDisco) {
-    char c, comando[30], caminho[50] = "/"; //, diretorio[14], raiz;
-    char nome[30];
-    int i, end = endRaiz;
+char caminhoUsuario(char *caminho, char *usuario, char *caminhoAbreviado) {
+    char caminhoUsuario[20] = "/home/";
+    int i = 0, j = 2;
+
+    strcat(caminhoUsuario, usuario);
+    while (i < strlen(caminho) && caminho[i] == caminhoUsuario[i])
+        i++;
+
+    if (i == strlen(caminhoUsuario)) {
+        strcpy(caminhoAbreviado, "~/");
+        i++;
+        while (i < strlen(caminho))
+            caminhoAbreviado[j++] = caminho[i++];
+        caminhoAbreviado[j] = '\0';
+        return 1;
+    }
+    return 0;
+}
+
+void execTerminal(Bloco *disco, int endRaiz, int endUsuario, char *usuario, int tamDisco) {
+    char c, comando[30], caminho[50] = "/home/", caminhoAbreviado[30] = "~/";
+    int endAtual = endUsuario;
+
+    strcat(caminho, usuario);
     do {
-        printf("%s@linux: %s $ ", usuario, caminho);
+        if (caminhoUsuario(caminho, usuario, caminhoAbreviado)) {
+            printf("%s@linux: %s [%d] $ ", usuario, caminhoAbreviado, endAtual);
+        }
+        else
+            printf("%s@linux: %s [%d] $ ", usuario, caminho, endAtual);
         scanf(" %[^\n]", comando);
         c = eComando(comando);
-        if (c != -1)
-            executarComando(disco, usuario, end, comando, c, tamDisco);
-        else
+        if (c != -1) {
+            endAtual = executarComando(disco, usuario, endRaiz, endUsuario, endAtual, comando, c, tamDisco, caminho);
+        } else
             printf("bash: %s: comando não encontrado\n", comando);
-        //exibirPilhas(disco);
-        //printf("Blocos livres: %d\n", qtdeBlocosLivres(disco));
     } while (strcmp(comando, "exit") && strcmp(comando, "poweroff"));
 }
 
@@ -35,7 +57,7 @@ void leitura(char *usuario, char *senha) {
 
 void executar(int tamDisco) {
     Bloco disco[tamDisco];
-    int endRaiz;
+    int endRaiz, endUsuario;
     char usuario[20], senha[20];
 
     limparTela();
@@ -45,8 +67,7 @@ void executar(int tamDisco) {
     limparTela();
     inicializarDisco(disco, tamDisco);
     criarListaBlocosLivres(disco, tamDisco);
-    //exibirPilhas(disco);
     endRaiz = criarRaiz(disco, usuario);
-    adicionarEntradasRaiz(disco, endRaiz, usuario);
-    execTerminal(disco, endRaiz, usuario, tamDisco);
+    endUsuario = adicionarEntradasRaiz(disco, endRaiz, usuario);
+    execTerminal(disco, endRaiz, endUsuario, usuario, tamDisco);
 }

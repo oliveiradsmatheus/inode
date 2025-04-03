@@ -1,8 +1,8 @@
 #define CABECA_LISTA_BL 0
 #define MAXIMO_BL 9
-#define PERMISSAO_ARQUIVO "rw-r--r--"
-#define PERMISSAO_DIRETORIO "rwxr-xr-x"
-#define PERMISSAO_LINK "rwxrwxrwx"
+#define PERMISSAO_ARQUIVO "-rw-r--r--"
+#define PERMISSAO_DIRETORIO "drwxr-xr-x"
+#define PERMISSAO_LINK "lrwxrwxrwx"
 #define QTDE_MAX_DIR 12
 #define TAM_MAX_NOME 15
 #define QTDE_INODE_DIRETO 5
@@ -91,7 +91,9 @@ void horarioLocal(char *data) {
 
     t = time(NULL);
     strcpy(data, ctime(&t));
-    for (int i = 0; i < 3; i++) {
+    data[strlen(data) - 1] = '\0';
+
+    for (i = 0; i < 3; i++) {
         dia[i] = data[i];
         mes[i] = data[i + 4];
     }
@@ -126,7 +128,7 @@ void horarioLocal(char *data) {
     else if (!strcmp(mes, "Dec"))
         strcpy(mes, "Dez");
 
-    for (int i = 0; i < 3; i++) {
+    for (i = 0; i < 3; i++) {
         data[i] = dia[i];
         data[i + 4] = mes[i];
     }
@@ -134,6 +136,30 @@ void horarioLocal(char *data) {
 
 int endNulo(void) {
     return -1;
+}
+
+char blocoLivre(Bloco *disco, int endBloco) {
+    int end = 0, endProx = disco[0].listaBlocosLivres.endProxLista, i;
+    char livre = 0;
+    while (end != endNulo() && !livre) {
+        i = 0;
+        while (i <= disco[end].listaBlocosLivres.topo && !livre) {
+            if (disco[end].listaBlocosLivres.end[i] == endBloco)
+                livre = 1;
+            i++;
+        }
+        end = endProx;
+        endProx = disco[end].listaBlocosLivres.endProxLista;
+    }
+    return livre;
+}
+
+char arquivo(Bloco *disco, int end) {
+    if (!blocoLivre(disco, end) && disco[end].bad == 0 && disco[end].dir.TL == 0 && disco[end].inode.permissao[0] ==
+        '\0' && disco[end].listaBlocosLivres.topo ==
+        endNulo() && disco[end].softLink.caminho[0] == '\0')
+        return 1;
+    return 0;
 }
 
 void inicializarBloco(Bloco *bloco) {
@@ -260,20 +286,124 @@ void criarListaBlocosLivres(Bloco *disco, int tamDisco) {
 }
 
 char dirVazio(Bloco disco) {
-    return disco.dir.TL == 0;
+    return disco.dir.TL == 2;
 }
 
 char dirCheio(Bloco disco) {
     return disco.dir.TL == QTDE_MAX_DIR;
 }
 
-void adicionarArquivo(Bloco *disco, int endDir, char *nomeArquivo, int endInode) {
-    disco[endDir].dir.arquivo[disco[endDir].dir.TL].endInode = endInode;
-    strcpy(disco[endDir].dir.arquivo[disco[endDir].dir.TL++].nome, nomeArquivo);
+int buscaArquivo(Bloco *disco, int endDir, char *nomeArquivo, int *posicao, int *endereco) {
+    int end, i, j, k, l;
+    char achou = 0;
+
+    // Busca em endereços diretos
+    end = 0;
+    while (disco[endDir].inode.endDireto[end] != -1 && end < 5 && !achou) {
+        i = 0;
+        while (i < disco[disco[endDir].inode.endDireto[end]].dir.TL && strcmp(
+                   disco[disco[endDir].inode.endDireto[end]].dir.arquivo[i].nome, nomeArquivo) != 0) {
+            i++;
+        }
+        if (i < disco[disco[endDir].inode.endDireto[end]].dir.TL) {
+            achou = 1;
+            *posicao = i;
+            *endereco = disco[endDir].inode.endDireto[end];
+        }
+        end++;
+    }
+
+    // Busca em endereço indireto simples
+    if (!achou && disco[endDir].inode.endSimplesIndireto != -1) {
+        end = 0;
+        while (disco[disco[endDir].inode.endSimplesIndireto].inodeIndireto.endInd[end] != -1 && end < 5 && !achou) {
+            i = 0;
+            while (i < disco[disco[disco[endDir].inode.endSimplesIndireto].inodeIndireto.endInd[end]].dir.TL && strcmp(
+                       disco[disco[disco[endDir].inode.endSimplesIndireto].inodeIndireto.endInd[end]].dir.arquivo[i].
+                       nome, nomeArquivo) != 0) {
+                i++;
+            }
+            if (i < disco[disco[disco[endDir].inode.endSimplesIndireto].inodeIndireto.endInd[end]].dir.TL) {
+                achou = 1;
+                *posicao = i;
+                *endereco = disco[disco[endDir].inode.endSimplesIndireto].inodeIndireto.endInd[end];
+            }
+            end++;
+        }
+    }
+
+    // Busca em endereço indireto duplo
+    if (!achou && disco[endDir].inode.endDuploIndireto != -1) {
+        end = 0;
+        while (disco[disco[endDir].inode.endDuploIndireto].inodeIndireto.endInd[end] != -1 && end < 5 && !achou) {
+            j = 0;
+            while (disco[disco[disco[endDir].inode.endDuploIndireto].inodeIndireto.endInd[end]].inodeIndireto.endInd[j]
+                   != -1 && j < 5 && !achou) {
+                i = 0;
+                while (i < disco[disco[disco[disco[endDir].inode.endDuploIndireto].inodeIndireto.endInd[end]].
+                           inodeIndireto.endInd[j]].dir.TL && strcmp(
+                           disco[disco[disco[disco[endDir].inode.endDuploIndireto].inodeIndireto.endInd[end]].
+                               inodeIndireto.endInd[j]].dir.arquivo[i].nome, nomeArquivo) != 0) {
+                    i++;
+                }
+                if (i < disco[disco[disco[disco[endDir].inode.endDuploIndireto].inodeIndireto.endInd[end]].inodeIndireto
+                        .endInd[j]].dir.TL) {
+                    achou = 1;
+                    *posicao = i;
+                    *endereco = disco[disco[disco[endDir].inode.endDuploIndireto].inodeIndireto.endInd[end]].
+                            inodeIndireto.endInd[j];
+                }
+                j++;
+            }
+            end++;
+        }
+    }
+
+    // Busca em endereço indireto triplo
+    if (!achou && disco[endDir].inode.endTriploIndireto != -1) {
+        end = 0;
+        while (disco[disco[endDir].inode.endTriploIndireto].inodeIndireto.endInd[end] != -1 && end < 5 && !achou) {
+            j = 0;
+            while (disco[disco[disco[endDir].inode.endTriploIndireto].inodeIndireto.endInd[end]].inodeIndireto.endInd[j]
+                   != -1 && j < 5 && !achou) {
+                k = 0;
+                while (disco[disco[disco[disco[endDir].inode.endTriploIndireto].inodeIndireto.endInd[end]].inodeIndireto
+                           .endInd[j]].inodeIndireto.endInd[k] != -1 && k < 5 && !achou) {
+                    i = 0;
+                    while (i < disco[disco[disco[disco[disco[endDir].inode.endTriploIndireto].inodeIndireto.endInd[end]]
+                               .inodeIndireto.endInd[j]].inodeIndireto.endInd[k]].dir.TL && strcmp(
+                               disco[disco[disco[disco[disco[endDir].inode.endTriploIndireto].inodeIndireto.endInd[end]]
+                                   .inodeIndireto.endInd[j]].inodeIndireto.endInd[k]].dir.arquivo[i].nome,
+                               nomeArquivo) != 0) {
+                        i++;
+                    }
+                    if (i < disco[disco[disco[disco[disco[endDir].inode.endTriploIndireto].inodeIndireto.endInd[end]].
+                            inodeIndireto.endInd[j]].inodeIndireto.endInd[k]].dir.TL) {
+                        achou = 1;
+                        *posicao = i;
+                        *endereco = disco[disco[disco[disco[endDir].inode.endTriploIndireto].inodeIndireto.endInd[end]].
+                            inodeIndireto.endInd[j]].inodeIndireto.endInd[k];
+                    }
+                    k++;
+                }
+                j++;
+            }
+            end++;
+        }
+    }
+
+    if (achou)
+        return achou;
+    return -1;
 }
 
-void iniciarBlocos(char *usuario, int *blocos) {
-    //criar root, dev, bin, home... respectivos inodes e pilhas de blocos livres.
+void adicionarArquivo(Bloco *disco, int endDir, char *nomeArquivo, int endInode) {
+    int pos, endArq;
+
+    if (buscaArquivo(disco, endDir, nomeArquivo, &pos, &endArq) == -1) {
+        disco[endDir].dir.arquivo[disco[endDir].dir.TL].endInode = endInode;
+        strcpy(disco[endDir].dir.arquivo[disco[endDir].dir.TL++].nome, nomeArquivo);
+    }
 }
 
 void setBad(Bloco *disco, char *comando, int tamDisco) {
@@ -291,6 +421,10 @@ void setBad(Bloco *disco, char *comando, int tamDisco) {
     blocoN = atoi(bloco);
     if (blocoN < tamDisco)
         disco[blocoN].bad = 1;
+}
+
+void setTam(Bloco *bloco, int end, int tamanho) {
+    bloco[end].inode.tamanho = tamanho;
 }
 
 char permissaoValida(char *permissao) {
@@ -331,7 +465,6 @@ void inserirInodeIS(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, 
                     char tipoArq) {
     int utilizados = 0;
 
-
     if (disco[endInodeInd].inodeIndireto.TL < QTDE_INODE_INDIRETO - inseridoT) {
         int inicio = disco[endInodeInd].inodeIndireto.TL;
         while (inicio < *qtBlocos && inicio < QTDE_INODE_INDIRETO - inseridoT) {
@@ -342,7 +475,10 @@ void inserirInodeIS(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, 
         }
     }
     *qtBlocos = *qtBlocos - utilizados;
-    if (inseridoT && *qtBlocos > 0) {
+    if (inseridoT && *qtBlocos
+        >
+        0
+    ) {
         disco[endInodeInd].inodeIndireto.endInd[disco[endInodeInd].inodeIndireto.TL] = criarInode(
             disco, usuario, tipoArq, *qtBlocos, endInode, "");
         if (disco[endInodeInd].inodeIndireto.endInd[disco[endInodeInd].inodeIndireto.TL] != endNulo())
@@ -396,15 +532,15 @@ int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPa
         switch (tipoArq) {
             case 'd':
                 strcpy(permissao, "d");
-                strcat(permissao,PERMISSAO_DIRETORIO);
+                strcpy(permissao,PERMISSAO_DIRETORIO);
                 break;
             case 'a':
-                strcpy(permissao, "-");
-                strcat(permissao,PERMISSAO_ARQUIVO);
+                strcpy(permissao, "a");
+                strcpy(permissao,PERMISSAO_ARQUIVO);
                 break;
             case 'l':
                 strcpy(permissao, "l");
-                strcat(permissao,PERMISSAO_LINK);
+                strcpy(permissao,PERMISSAO_LINK);
         }
         strcpy(disco[endBloco].inode.proprietario, usuario);
         strcpy(disco[endBloco].inode.grupo, usuario);
@@ -424,12 +560,14 @@ int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPa
         if (blocosRest > 0) {
             if (disco[endBloco].inode.endSimplesIndireto == endNulo())
                 disco[endBloco].inode.endSimplesIndireto = criarInodeInd(disco);
-            inserirInodeIS(disco, endBloco, disco[endBloco].inode.endSimplesIndireto, &blocosRest, 0, usuario, tipoArq);
+            inserirInodeIS(disco, endBloco, disco[endBloco].inode.endSimplesIndireto, &blocosRest, 0, usuario,
+                           tipoArq);
         }
         if (blocosRest > 0) {
             if (disco[endBloco].inode.endDuploIndireto == endNulo())
                 disco[endBloco].inode.endDuploIndireto = criarInodeInd(disco);
-            inserirInodeID(disco, endBloco, disco[endBloco].inode.endDuploIndireto, &blocosRest, 0, usuario, tipoArq);
+            inserirInodeID(disco, endBloco, disco[endBloco].inode.endDuploIndireto, &blocosRest, 0, usuario,
+                           tipoArq);
         }
         if (blocosRest > 0) {
             if (disco[endBloco].inode.endTriploIndireto == endNulo())
@@ -449,131 +587,181 @@ int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPa
 }
 
 void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, char tipo, int tam) {
-    int i;
+    int i, j, k, endPai, indSimples, indDuplo, indTriplo;
+    char achou;
 
+    // Verifica endereços diretos
     i = 0;
-    while (dirCheio(disco[disco[end].inode.endDireto[i]]))
+    while (i < 1 && dirCheio(disco[disco[end].inode.endDireto[i]]))
         i++;
-    if (i < QTDE_INODE_DIRETO) {
-        if (disco[end].inode.endDireto[i] != -1) {
-            if (disco[disco[end].inode.endDireto[i]].dir.TL < QTDE_MAX_DIR)
+    if (i < 1 && !dirCheio(disco[disco[end].inode.endDireto[i]])) {
+        endPai = disco[disco[end].inode.endDireto[i]].dir.arquivo[1].endInode;
+        if (disco[end].inode.endDireto[i] == endNulo()) {
+            disco[end].inode.endDireto[i] = popBlocoLivre(disco);
+            if (disco[end].inode.endDireto[i] != endNulo()) {
+                adicionarArquivo(disco, disco[end].inode.endDireto[i], ".", end);
+                adicionarArquivo(disco, disco[end].inode.endDireto[i], "..", endPai);
                 adicionarArquivo(disco, disco[end].inode.endDireto[i], nomeEntrada,
                                  criarInode(disco, usuario, tipo, tam, end, ""));
-        } else {
-            disco[end].inode.endDireto[i] = popBlocoLivre(disco);
+            } else
+                printf("Erro: Espaço em disco insuficiente!\n");
+        } else if (!dirCheio(disco[disco[end].inode.endDireto[i]])) {
             adicionarArquivo(disco, disco[end].inode.endDireto[i], nomeEntrada,
                              criarInode(disco, usuario, tipo, tam, end, ""));
         }
     } else {
+        // Verifica endereços indiretos simples
+        endPai = disco[disco[end].inode.endDireto[0]].dir.arquivo[1].endInode;
 
+        if (disco[end].inode.endSimplesIndireto == endNulo())
+            disco[end].inode.endSimplesIndireto = criarInodeInd(disco);
+
+        if (disco[end].inode.endSimplesIndireto == endNulo())
+            printf("Erro: Espaço em disco insuficiente!\n");
+        else {
+            i = 0;
+            indSimples = disco[end].inode.endSimplesIndireto;
+            while (i < 1 && dirCheio(disco[disco[indSimples].inodeIndireto.endInd[i]]))
+                i++;
+            if (i < 1 && !dirCheio(disco[disco[indSimples].inodeIndireto.endInd[i]])) {
+                if (disco[indSimples].inodeIndireto.endInd[i] == endNulo()) {
+                    disco[indSimples].inodeIndireto.endInd[i] = popBlocoLivre(disco);
+                    if (disco[indSimples].inodeIndireto.endInd[i] != endNulo()) {
+                        adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[i], ".",
+                                         end);
+                        adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[i],
+                                         "..", endPai);
+                        adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[i],
+                                         nomeEntrada,
+                                         criarInode(disco, usuario, tipo, tam, end, ""));
+                    } else
+                        printf("Erro: Espaço em disco insuficiente!\n");
+                } else if (!dirCheio(disco[disco[indSimples].inodeIndireto.endInd[i]])) {
+                    adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[i],
+                                     nomeEntrada,
+                                     criarInode(disco, usuario, tipo, tam, end, ""));
+                }
+            } else {
+                // Verifica endereços indiretos duplos
+                if (disco[end].inode.endDuploIndireto == endNulo())
+                    disco[end].inode.endDuploIndireto = criarInodeInd(disco);
+                if (disco[end].inode.endDuploIndireto == endNulo())
+                    printf("Erro: Espaço em disco insuficiente!\n");
+                else {
+                    i = 0;
+                    indDuplo = disco[end].inode.endDuploIndireto;
+                    achou = 0;
+                    while (i < 1 && !achou) {
+                        j = 0;
+                        indSimples = disco[indDuplo].inodeIndireto.endInd[i];
+                        while (j < 1 && dirCheio(disco[disco[indSimples].inodeIndireto.endInd[j]]))
+                            j++;
+                        if (j < 1)
+                            achou = 1;
+                        else
+                            i++;
+                    }
+
+                    /*while (i < 1)
+                        i++;
+                    if (disco[indDuplo].inodeIndireto.endInd[i] == endNulo())
+                        disco[indDuplo].inodeIndireto.endInd[i] = criarInodeInd(disco);
+                    j = 0;
+                    indSimples = disco[indDuplo].inodeIndireto.endInd[i];
+                    while (j < 1 && dirCheio(disco[disco[indSimples].inodeIndireto.endInd[j]]))
+                        j++;*/
+                    if (i < 1 && j < 1) {
+                        if (disco[indSimples].inodeIndireto.endInd[j] == endNulo()) {
+                            disco[indSimples].inodeIndireto.endInd[j] = popBlocoLivre(disco);
+                            if (disco[indSimples].inodeIndireto.endInd[j] != endNulo()) {
+                                adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[j], ".",
+                                                 end);
+                                adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[j],
+                                                 "..", endPai);
+                                adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[j],
+                                                 nomeEntrada,
+                                                 criarInode(disco, usuario, tipo, tam, end, ""));
+                            } else
+                                printf("Erro: Espaço em disco insuficiente!\n");
+                        } else if (!dirCheio(disco[disco[indSimples].inodeIndireto.endInd[j]])) {
+                            adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[j],
+                                             nomeEntrada,
+                                             criarInode(disco, usuario, tipo, tam, end, ""));
+                        } else {
+                            // Verifica endereços indiretos triplos
+                            if (disco[end].inode.endTriploIndireto == endNulo())
+                                disco[end].inode.endTriploIndireto = criarInodeInd(disco);
+                            if (disco[end].inode.endTriploIndireto == endNulo())
+                                printf("Erro: Espaço em disco insuficiente!\n");
+                            else {
+                                i = 0;
+                                indTriplo = disco[end].inode.endDuploIndireto;
+                                while (i < QTDE_INODE_INDIRETO && dirCheio(
+                                           disco[disco[indTriplo].inodeIndireto.endInd[i]]))
+                                    i++;
+                                if (disco[indTriplo].inodeIndireto.endInd[i] == endNulo())
+                                    disco[indTriplo].inodeIndireto.endInd[i] = criarInodeInd(disco);
+                                j = 0;
+                                indDuplo = disco[indTriplo].inodeIndireto.endInd[i];
+                                while (j < QTDE_INODE_INDIRETO && dirCheio(
+                                           disco[disco[indDuplo].inodeIndireto.endInd[j]]))
+                                    j++;
+                                if (disco[indDuplo].inodeIndireto.endInd[i] == endNulo())
+                                    disco[indDuplo].inodeIndireto.endInd[i] = criarInodeInd(disco);
+                                k = 0;
+                                indSimples = disco[indDuplo].inodeIndireto.endInd[i];
+                                while (k < QTDE_INODE_INDIRETO && dirCheio(
+                                           disco[disco[indSimples].inodeIndireto.endInd[k]]))
+                                    k++;
+                                if (i < QTDE_INODE_INDIRETO && j < QTDE_INODE_INDIRETO && k < QTDE_INODE_INDIRETO) {
+                                    if (disco[indSimples].inodeIndireto.endInd[k] == endNulo()) {
+                                        disco[indSimples].inodeIndireto.endInd[k] = popBlocoLivre(disco);
+                                        if (disco[indSimples].inodeIndireto.endInd[k] != endNulo()) {
+                                            adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[k], ".",
+                                                             end);
+                                            adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[k],
+                                                             "..", endPai);
+                                            adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[k],
+                                                             nomeEntrada,
+                                                             criarInode(disco, usuario, tipo, tam, end, ""));
+                                        } else
+                                            printf("Erro: Espaço em disco insuficiente!\n");
+                                    } else if (!dirCheio(disco[disco[indSimples].inodeIndireto.endInd[k]])) {
+                                        adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[k],
+                                                         nomeEntrada,
+                                                         criarInode(disco, usuario, tipo, tam, end, ""));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
-void adicionarEntradasRaiz(Bloco *disco, int endRaiz, char *usuario) {
+int adicionarEntradasRaiz(Bloco *disco, int endRaiz, char *usuario) {
+    int endUsuario;
+
+    adicionarEntrada(disco, endRaiz, usuario, "home", 'd', 1);
+    adicionarEntrada(disco, disco[disco[endRaiz].inode.endDireto[0]].dir.arquivo[2].endInode, usuario,
+                     usuario, 'd', 1);
+    endUsuario = disco[disco[disco[disco[endRaiz].inode.endDireto[0]].dir.arquivo[2].endInode].inode.
+                endDireto[0]].dir.
+            arquivo[2].endInode;
+    adicionarEntrada(disco, endUsuario, usuario, "Documentos", 'd', 1);
+    adicionarEntrada(disco, endUsuario, usuario, "Downloads", 'd', 1);
+    adicionarEntrada(disco, endUsuario, usuario, "Imagens", 'd', 1);
+    adicionarEntrada(disco, endUsuario, usuario, "Músicas", 'd', 1);
+    adicionarEntrada(disco, endUsuario, usuario, "Público", 'd', 1);
+    adicionarEntrada(disco, endUsuario, usuario, "Vídeos", 'd', 1);
     adicionarEntrada(disco, endRaiz, usuario, "bin", 'd', 1);
     adicionarEntrada(disco, endRaiz, usuario, "boot", 'd', 1);
     adicionarEntrada(disco, endRaiz, usuario, "dev", 'd', 1);
     adicionarEntrada(disco, endRaiz, usuario, "etc", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "home", 'd', 1);
     adicionarEntrada(disco, endRaiz, usuario, "lib", 'd', 1);
     adicionarEntrada(disco, endRaiz, usuario, "opt", 'd', 1);
-    /*adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "1", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "2", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "3", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "4", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "5", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "6", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "7", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "8", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "9", 'd', 1);*/
+
+    return endUsuario;
 }
