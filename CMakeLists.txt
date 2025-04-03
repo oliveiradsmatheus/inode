@@ -5,7 +5,6 @@ set(CMAKE_C_STANDARD 11)
 
 add_executable(inode main.c
         bibliotecas/bloco.h
-        bibliotecas/pilha.h
         bibliotecas/comandos.h
         bibliotecas/sistema.h)
 

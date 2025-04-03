@@ -31,7 +31,7 @@
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 12,
+				"line" : 11,
 				"parent" : 0
 			}
 		]
@@ -103,8 +103,7 @@
 			[
 				1,
 				2,
-				3,
-				4
+				3
 			]
 		}
 	],
@@ -119,11 +118,6 @@
 		{
 			"backtrace" : 1,
 			"path" : "bibliotecas/bloco.h",
-			"sourceGroupIndex" : 1
-		},
-		{
-			"backtrace" : 1,
-			"path" : "bibliotecas/pilha.h",
 			"sourceGroupIndex" : 1
 		},
 		{
