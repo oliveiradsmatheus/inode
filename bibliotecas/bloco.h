@@ -7,19 +7,9 @@
 #define TAM_MAX_NOME 15
 #define QTDE_INODE_DIRETO 5
 #define QTDE_INODE_INDIRETO 5
+#define TAM_MAX_ARQUIVO 1600
 
 struct inode {
-    /*
-        DEFINÇÃO DO QUE O I-NODE ESTÁ APONTANDO:
-        [0] 'd' = DIRETÓRIO, '-' = ARQUIVO, 'l' = LINK
-
-        PERMISSÕES:
-        [1] - [3] (rwx) -> OWNER
-        [4] - [6] (rwx) -> GROUP
-        [7] - [9] (rwx) -> OTHERS
-
-        [10] - '\0'
-    */
     char permissao[11];
     char proprietario[20];
     char grupo[20];
@@ -347,7 +337,7 @@ char dirCheio(Bloco disco) {
 }
 
 int buscaArquivo(Bloco *disco, int endDir, char *nomeArquivo, int *posicao, int *endereco) {
-    int end, i, j, k, l;
+    int end, i, j, k;
     char achou = 0;
 
     end = 0;
@@ -520,10 +510,7 @@ void inserirInodeIS(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, 
         }
     }
     *qtBlocos = *qtBlocos - utilizados;
-    if (inseridoT && *qtBlocos
-        >
-        0
-    ) {
+    if (inseridoT && *qtBlocos > 0 ) {
         disco[endInodeInd].inodeIndireto.endInd[disco[endInodeInd].inodeIndireto.TL] = criarInode(
             disco, usuario, tipoArq, *qtBlocos, endInode, "");
         if (disco[endInodeInd].inodeIndireto.endInd[disco[endInodeInd].inodeIndireto.TL] != endNulo())
@@ -552,7 +539,7 @@ void inserirInodeIT(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, 
         while (inicio < *qtBlocos && inicio < QTDE_INODE_INDIRETO) {
             if (disco[endInodeInd].inodeIndireto.endInd[inicio] == endNulo())
                 disco[endInodeInd].inodeIndireto.endInd[inicio] = criarInodeInd(disco);
-            inserirInodeID(disco, endInode, disco[endInodeInd].inodeIndireto.endInd[inicio], &*qtBlocos, 1,
+            inserirInodeID(disco, endInode, disco[endInodeInd].inodeIndireto.endInd[inicio], &*qtBlocos, 0,
                            usuario, tipoArq);
             disco[endInodeInd].inodeIndireto.TL++;
             inicio++;
@@ -596,7 +583,7 @@ int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPa
         strcpy(disco[endBloco].inode.ultimoAcesso, data);
 
         i = 0;
-        while (i < blocosNec && i < 5) {
+        while (i < QTDE_INODE_DIRETO && i < blocosNec) {
             if (disco[endBloco].inode.endDireto[utilizados] == endNulo())
                 disco[endBloco].inode.endDireto[utilizados++] = popBlocoLivre(disco);
             i++;

@@ -940,7 +940,7 @@ char eComando(char *comando) {
 int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int end, char *comando, char c, int tamDisco,
                     char *caminho) {
     int i = 0, tam, endAtual = end, vet[30];
-    char nomeArq[TAM_MAX_NOME], permissao[7], origem[50], destino[50], tipoPerm[4], usuarioPerm[4], tipo, tipoLink;
+    char nomeArq[TAM_MAX_NOME], origem[50], destino[50], tipoPerm[4], usuarioPerm[4], tipo, tipoLink;
 
     switch (c) {
         case 0:
