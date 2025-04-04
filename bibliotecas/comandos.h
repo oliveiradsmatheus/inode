@@ -258,6 +258,135 @@ void arvore(Bloco *disco, int end, int nivel, int *vet) {
     }
 }
 
+void chmod(Bloco *disco, int endDir, char *nomeArq, char *permUsuario, char *tipoPerm, char tipo) {
+    int pos, endArq, i, j;
+    char busca, novaPerm[11];
+
+    busca = buscaArquivo(disco, endDir, nomeArq, &pos, &endArq);
+
+    if (busca != -1) {
+        strcpy(novaPerm, disco[disco[endArq].dir.arquivo[pos].endInode].inode.permissao);
+        printf("nova: %s", novaPerm);
+        switch (tipo) {
+            case '+':
+                i = strlen(permUsuario) - 1;
+                while (i >= 0) {
+                    switch (permUsuario[i]) {
+                        case 'u':
+                            j = strlen(tipoPerm) - 1;
+                            while (j >= 0) {
+                                switch (tipoPerm[j]) {
+                                    case 'r':
+                                        novaPerm[1] = 'r';
+                                        break;
+                                    case 'w':
+                                        novaPerm[2] = 'w';
+                                        break;
+                                    case 'x':
+                                        novaPerm[3] = 'x';
+                                }
+                                j--;
+                            }
+                            break;
+                        case 'g':
+                            j = strlen(tipoPerm) - 1;
+                            while (j >= 0) {
+                                switch (tipoPerm[j]) {
+                                    case 'r':
+                                        novaPerm[4] = 'r';
+                                        break;
+                                    case 'w':
+                                        novaPerm[5] = 'w';
+                                        break;
+                                    case 'x':
+                                        novaPerm[6] = 'x';
+                                }
+                                j--;
+                            }
+                            break;
+                        case 'o':
+                            j = strlen(tipoPerm) - 1;
+                            while (j >= 0) {
+                                switch (tipoPerm[j]) {
+                                    case 'r':
+                                        novaPerm[7] = 'r';
+                                        break;
+                                    case 'w':
+                                        novaPerm[8] = 'w';
+                                        break;
+                                    case 'x':
+                                        novaPerm[9] = 'x';
+                                }
+                                j--;
+                            }
+                            break;
+                    }
+                    i--;
+                }
+                printf("adicionar\n ");
+                break;
+            case '-':
+                i = strlen(permUsuario) - 1;
+                while (i >= 0) {
+                    switch (permUsuario[i]) {
+                        case 'u':
+                            j = strlen(tipoPerm) - 1;
+                            while (j >= 0) {
+                                switch (tipoPerm[j]) {
+                                    case 'r':
+                                        novaPerm[1] = '-';
+                                        break;
+                                    case 'w':
+                                        novaPerm[2] = '-';
+                                        break;
+                                    case 'x':
+                                        novaPerm[3] = '-';
+                                }
+                                j--;
+                            }
+                            break;
+                        case 'g':
+                            j = strlen(tipoPerm) - 1;
+                            while (j >= 0) {
+                                switch (tipoPerm[j]) {
+                                    case 'r':
+                                        novaPerm[4] = '-';
+                                        break;
+                                    case 'w':
+                                        novaPerm[5] = '-';
+                                        break;
+                                    case 'x':
+                                        novaPerm[6] = '-';
+                                }
+                                j--;
+                            }
+                            break;
+                        case 'o':
+                            j = strlen(tipoPerm) - 1;
+                            while (j >= 0) {
+                                switch (tipoPerm[j]) {
+                                    case 'r':
+                                        novaPerm[7] = '-';
+                                        break;
+                                    case 'w':
+                                        novaPerm[8] = '-';
+                                        break;
+                                    case 'x':
+                                        novaPerm[9] = '-';
+                                }
+                                j--;
+                            }
+                    }
+                    i--;
+                }
+                printf("remover\n ");
+                break;
+        }
+        strcpy(disco[disco[endArq].dir.arquivo[pos].endInode].inode.permissao, novaPerm);
+    } else
+        printf("Arquivo não encontrado\n");
+}
+
 char linkValido(char *comando, char *origem, char *destino) {
     char tipo = 0;
     int i = 8, j;
@@ -295,14 +424,39 @@ char validarRemocao(char *comando, char *nomeArquivo) {
     return 0;
 }
 
-char validarAlteracaoPermissao(char *comando, char *permissao) {
-    int i = 7, j = 0;
+char validarAlteracaoPermissao(char *comando, char *usuario, char *tipo, char *nomeArquivo) {
+    int i, j;
+    char valido = 0;
 
-    while (i < strlen(comando))
-        permissao[j++] = comando[i++];
-    if (permissaoValida(permissao))
-        return 1;
-    return 0;
+    if (comando[6] != '-' && comando[6] != '+')
+        valido = 0;
+    else {
+        i = 7;
+        j = 0;
+        while (i < strlen(comando) && (comando[i] == 'u' || comando[i] == 'g' || comando[i] == 'o'))
+            usuario[j++] = comando[i++];
+        usuario[j] = '\0';
+        if (i < strlen(comando)) {
+            i++;
+            j = 0;
+            while (i < strlen(comando) && (comando[i] == 'r' || comando[i] == 'w' || comando[i] == 'x'))
+                tipo[j++] = comando[i++];
+            tipo[j] = '\0';
+
+            i++;
+            j = 0;
+            while (i < strlen(comando) && comando[i] != ' ')
+                nomeArquivo[j++] = comando[i++];
+            nomeArquivo[j] = '\0';
+            if (i == strlen(comando))
+                valido = 1;
+            else
+                valido = 0;
+        } else
+            valido = 0;
+    }
+
+    return valido;
 }
 
 char validarCriacaoArq(char *comando, char *nomeArq, int *tam) {
@@ -556,19 +710,19 @@ void touch(Bloco *disco, int end, char *usuario, char *nomeArq, int tam) {
     int pos, endArq, tamAnt, diferenca, qtdeBlocos, restoUltBloco, novaQuant;
 
     if (buscaArquivo(disco, end, nomeArq, &pos, &endArq) == -1) {
-        if ((float) tam / (float) 10 < qtdeBlocosLivres(disco))
+        if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) < qtdeBlocosLivres(disco))
             adicionarEntrada(disco, end, usuario, nomeArq, 'a', tam);
         else
             printf("Espaço em disco insuficiente!\n");
     } else {
-        if ((float) tam / (float) 10 < qtdeBlocosLivres(disco)) {
+        if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) < qtdeBlocosLivres(disco)) {
             tamAnt = disco[disco[endArq].dir.arquivo[pos].endInode].inode.tamanho;
             diferenca = tam - tamAnt;
             restoUltBloco = tamAnt % 10;
             disco[disco[endArq].dir.arquivo[pos].endInode].inode.tamanho = tam;
             if (diferenca > 0) {
                 qtdeBlocos = ceil((((float) tam - (float) tamAnt) + (float) restoUltBloco) / 10);
-                if (qtdeBlocos < qtdeBlocosLivres(disco))
+                if (qtdeBlocosNecessarios(qtdeBlocos) < qtdeBlocosLivres(disco))
                     aumentarBlocos(disco, disco[endArq].dir.arquivo[pos].endInode, qtdeBlocos);
             } else {
                 qtdeBlocos = ceil((float) tamAnt / 10);
@@ -783,11 +937,10 @@ char eComando(char *comando) {
     return c;
 }
 
-int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int end, char *comando, char c,
-                    int tamDisco,
+int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int end, char *comando, char c, int tamDisco,
                     char *caminho) {
     int i = 0, tam, endAtual = end, vet[30];
-    char nomeArq[TAM_MAX_NOME], permissao[7], origem[50], destino[50], tipoLink;
+    char nomeArq[TAM_MAX_NOME], permissao[7], origem[50], destino[50], tipoPerm[4], usuarioPerm[4], tipo, tipoLink;
 
     switch (c) {
         case 0:
@@ -862,9 +1015,11 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
                 printf("Opção não existente para o comando clear\n");
             break;
         case 11:
-            if (validarAlteracaoPermissao(comando, permissao))
-                //chmod(disco, end, nomeArq, permissao);
-                break;
+            if (validarAlteracaoPermissao(comando, usuarioPerm, tipoPerm, nomeArq)) {
+                tipo = comando[6];
+                chmod(disco, end, nomeArq, usuarioPerm, tipoPerm, tipo);
+            }
+            break;
         case 12:
             visualizarArquivo(disco, end, comando);
             break;

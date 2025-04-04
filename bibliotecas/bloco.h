@@ -199,6 +199,59 @@ char fimLista(Bloco disco) {
     return disco.listaBlocosLivres.endProxLista == endNulo();
 }
 
+int qtdeBlocosNecessarios(int qtdeBlocos) {
+    int i, j, k, cont = 1;
+    i = 0;
+    while (i < QTDE_INODE_DIRETO && qtdeBlocos > 0) {
+        i++;
+        cont++;
+        qtdeBlocos--;
+    }
+    if (qtdeBlocos > 0) {
+        cont++;
+        i = 0;
+        while (i < QTDE_INODE_INDIRETO && qtdeBlocos > 0) {
+            i++;
+            cont++;
+            qtdeBlocos--;
+        }
+        if (qtdeBlocos > 0) {
+            cont++;
+            i = 0;
+            while (i < QTDE_INODE_INDIRETO && qtdeBlocos > 0) {
+                j = 0;
+                cont++;
+                while (j < QTDE_INODE_INDIRETO && qtdeBlocos > 0) {
+                    cont++;
+                    qtdeBlocos--;
+                    j++;
+                }
+                i++;
+            }
+            if (qtdeBlocos > 0) {
+                cont++;
+                i = 0;
+                while (i < QTDE_INODE_INDIRETO && qtdeBlocos > 0) {
+                    j = 0;
+                    cont++;
+                    while (j < QTDE_INODE_INDIRETO && qtdeBlocos > 0) {
+                        cont++;
+                        k = 0;
+                        while (k < QTDE_INODE_INDIRETO && qtdeBlocos > 0) {
+                            cont++;
+                            qtdeBlocos--;
+                            k++;
+                        }
+                        j++;
+                    }
+                    i++;
+                }
+            }
+        }
+    }
+    return cont;
+}
+
 int qtdeBlocosLivres(Bloco *disco) {
     int qtde = 0, end = CABECA_LISTA_BL;
 
@@ -297,7 +350,6 @@ int buscaArquivo(Bloco *disco, int endDir, char *nomeArquivo, int *posicao, int 
     int end, i, j, k, l;
     char achou = 0;
 
-    // Busca em endereços diretos
     end = 0;
     while (disco[endDir].inode.endDireto[end] != -1 && end < 5 && !achou) {
         i = 0;
@@ -312,8 +364,6 @@ int buscaArquivo(Bloco *disco, int endDir, char *nomeArquivo, int *posicao, int 
         }
         end++;
     }
-
-    // Busca em endereço indireto simples
     if (!achou && disco[endDir].inode.endSimplesIndireto != -1) {
         end = 0;
         while (disco[disco[endDir].inode.endSimplesIndireto].inodeIndireto.endInd[end] != -1 && end < 5 && !achou) {
@@ -331,8 +381,6 @@ int buscaArquivo(Bloco *disco, int endDir, char *nomeArquivo, int *posicao, int 
             end++;
         }
     }
-
-    // Busca em endereço indireto duplo
     if (!achou && disco[endDir].inode.endDuploIndireto != -1) {
         end = 0;
         while (disco[disco[endDir].inode.endDuploIndireto].inodeIndireto.endInd[end] != -1 && end < 5 && !achou) {
@@ -358,8 +406,6 @@ int buscaArquivo(Bloco *disco, int endDir, char *nomeArquivo, int *posicao, int 
             end++;
         }
     }
-
-    // Busca em endereço indireto triplo
     if (!achou && disco[endDir].inode.endTriploIndireto != -1) {
         end = 0;
         while (disco[disco[endDir].inode.endTriploIndireto].inodeIndireto.endInd[end] != -1 && end < 5 && !achou) {
@@ -391,7 +437,6 @@ int buscaArquivo(Bloco *disco, int endDir, char *nomeArquivo, int *posicao, int 
             end++;
         }
     }
-
     if (achou)
         return achou;
     return -1;
@@ -590,7 +635,6 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
     int i, j, k, endPai, indSimples, indDuplo, indTriplo;
     char achou;
 
-    // Verifica endereços diretos
     i = 0;
     while (i < QTDE_INODE_DIRETO && dirCheio(disco[disco[end].inode.endDireto[i]]))
         i++;
@@ -610,7 +654,6 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
                              criarInode(disco, usuario, tipo, tam, end, ""));
         }
     } else {
-        // Verifica endereços indiretos simples
         endPai = disco[disco[end].inode.endDireto[0]].dir.arquivo[1].endInode;
 
         if (disco[end].inode.endSimplesIndireto == endNulo())
@@ -642,7 +685,6 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
                                      criarInode(disco, usuario, tipo, tam, end, ""));
                 }
             } else {
-                // Verifica endereços indiretos duplos
                 if (disco[end].inode.endDuploIndireto == endNulo())
                     disco[end].inode.endDuploIndireto = criarInodeInd(disco);
                 if (disco[end].inode.endDuploIndireto == endNulo())
@@ -681,7 +723,6 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
                                              nomeEntrada,
                                              criarInode(disco, usuario, tipo, tam, end, ""));
                     } else {
-                        // Verifica endereços indiretos triplos
                         if (disco[end].inode.endTriploIndireto == endNulo())
                             disco[end].inode.endTriploIndireto = criarInodeInd(disco);
                         if (disco[end].inode.endTriploIndireto == endNulo())
@@ -700,7 +741,8 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
                                     if (disco[indDuplo].inodeIndireto.endInd[j] == endNulo())
                                         disco[indDuplo].inodeIndireto.endInd[j] = criarInodeInd(disco);
                                     indSimples = disco[indDuplo].inodeIndireto.endInd[j];
-                                    while (k < QTDE_INODE_INDIRETO && dirCheio(disco[disco[indSimples].inodeIndireto.endInd[k]]))
+                                    while (k < QTDE_INODE_INDIRETO && dirCheio(
+                                               disco[disco[indSimples].inodeIndireto.endInd[k]]))
                                         k++;
                                     if (k < QTDE_INODE_INDIRETO)
                                         achou = 1;
