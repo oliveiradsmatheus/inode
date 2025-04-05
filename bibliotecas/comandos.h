@@ -270,7 +270,6 @@ void chmod(Bloco *disco, int endDir, char *nomeArq, char *permUsuario, char *tip
 
     if (busca != -1) {
         strcpy(novaPerm, disco[disco[endArq].dir.arquivo[pos].endInode].inode.permissao);
-        printf("nova: %s", novaPerm);
         switch (tipo) {
             case '+':
                 i = strlen(permUsuario) - 1;
@@ -1442,9 +1441,12 @@ void rm(Bloco *disco, int endEntrada, char *nomeArq) {
                 i++;
             }
             disco[end].dir.TL--;
-            tam = (int) (ceil)((float) disco[inodeArq].inode.tamanho / (float) 10);
-            diminuirBlocos(disco, inodeArq, tam);
-            pushBlocoLivre(disco, inodeArq);
+            disco[disco[end].dir.arquivo[i].endInode].inode.contadorLink--;
+            if (disco[disco[end].dir.arquivo[i].endInode].inode.contadorLink == 0) {
+                tam = (int) (ceil)((float) disco[inodeArq].inode.tamanho / (float) 10);
+                diminuirBlocos(disco, inodeArq, tam);
+                pushBlocoLivre(disco, inodeArq);
+            }
         }
     }
 }
