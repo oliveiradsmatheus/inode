@@ -233,6 +233,27 @@ char fimLista(Bloco disco) {
     return disco.listaBlocosLivres.endProxLista == endNulo();
 }
 
+void proxEntrada(char *caminho, char *entrada) {
+    int i = 0, j = 0;
+
+    if (caminho[0] == '/') {
+        i = 0;
+        while (i < strlen(caminho) - 1)
+            caminho[i++] = caminho[i + 1];
+        caminho[i] = '\0';
+    }
+
+    i = 0;
+    while (i < strlen(caminho) && caminho[i] != '/')
+        entrada[j++] = caminho[i++];
+    entrada[j] = '\0';
+
+    i = 0;
+    while (i < strlen(caminho) - strlen(entrada))
+        caminho[i++] = caminho[i + strlen(entrada)];
+    caminho[i] = '\0';
+}
+
 int qtdeBlocosNecessarios(int qtdeBlocos) {
     int i, j, k, cont = 1;
     i = 0;
@@ -662,7 +683,7 @@ int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPa
     return endNulo();
 }
 
-void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, char tipo, int tam) {
+void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, char tipo, int tam, char *caminhoLink) {
     int i, j, k, endPai, indSimples, indDuplo, indTriplo;
     char achou;
 
@@ -677,7 +698,7 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
                 adicionarArquivo(disco, disco[end].inode.endDireto[i], ".", end);
                 adicionarArquivo(disco, disco[end].inode.endDireto[i], "..", endPai);
                 adicionarArquivo(disco, disco[end].inode.endDireto[i], nomeEntrada,
-                                 criarInode(disco, usuario, tipo, tam, end, ""));
+                                 criarInode(disco, usuario, tipo, tam, end, caminhoLink));
             } else
                 printf("Erro: Espaço em disco insuficiente!\n");
         } else if (!dirCheio(disco[disco[end].inode.endDireto[i]])) {
@@ -707,13 +728,13 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
                                          "..", endPai);
                         adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[i],
                                          nomeEntrada,
-                                         criarInode(disco, usuario, tipo, tam, end, ""));
+                                         criarInode(disco, usuario, tipo, tam, end, caminhoLink));
                     } else
                         printf("Erro: Espaço em disco insuficiente!\n");
                 } else if (!dirCheio(disco[disco[indSimples].inodeIndireto.endInd[i]])) {
                     adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[i],
                                      nomeEntrada,
-                                     criarInode(disco, usuario, tipo, tam, end, ""));
+                                     criarInode(disco, usuario, tipo, tam, end, caminhoLink));
                 }
             } else {
                 if (disco[end].inode.endDuploIndireto == endNulo())
@@ -746,13 +767,13 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
                                                  "..", endPai);
                                 adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[j],
                                                  nomeEntrada,
-                                                 criarInode(disco, usuario, tipo, tam, end, ""));
+                                                 criarInode(disco, usuario, tipo, tam, end, caminhoLink));
                             } else
                                 printf("Erro: Espaço em disco insuficiente!\n");
                         } else if (!dirCheio(disco[disco[indSimples].inodeIndireto.endInd[j]]))
                             adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[j],
                                              nomeEntrada,
-                                             criarInode(disco, usuario, tipo, tam, end, ""));
+                                             criarInode(disco, usuario, tipo, tam, end, caminhoLink));
                     } else {
                         if (disco[end].inode.endTriploIndireto == endNulo())
                             disco[end].inode.endTriploIndireto = criarInodeInd(disco);
@@ -795,13 +816,13 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
                                                          "..", endPai);
                                         adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[k],
                                                          nomeEntrada,
-                                                         criarInode(disco, usuario, tipo, tam, end, ""));
+                                                         criarInode(disco, usuario, tipo, tam, end, caminhoLink));
                                     } else
                                         printf("Erro: Espaço em disco insuficiente!\n");
                                 } else if (!dirCheio(disco[disco[indSimples].inodeIndireto.endInd[k]])) {
                                     adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[k],
                                                      nomeEntrada,
-                                                     criarInode(disco, usuario, tipo, tam, end, ""));
+                                                     criarInode(disco, usuario, tipo, tam, end, caminhoLink));
                                 }
                             }
                         }
@@ -815,24 +836,24 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
 int adicionarEntradasRaiz(Bloco *disco, int endRaiz, char *usuario) {
     int endUsuario;
 
-    adicionarEntrada(disco, endRaiz, usuario, "home", 'd', 1);
+    adicionarEntrada(disco, endRaiz, usuario, "home", 'd', 1, "");
     adicionarEntrada(disco, disco[disco[endRaiz].inode.endDireto[0]].dir.arquivo[2].endInode, usuario,
-                     usuario, 'd', 1);
+                     usuario, 'd', 1, "");
     endUsuario = disco[disco[disco[disco[endRaiz].inode.endDireto[0]].dir.arquivo[2].endInode].inode.
                 endDireto[0]].dir.
             arquivo[2].endInode;
-    adicionarEntrada(disco, endUsuario, usuario, "Documentos", 'd', 1);
-    adicionarEntrada(disco, endUsuario, usuario, "Downloads", 'd', 1);
-    adicionarEntrada(disco, endUsuario, usuario, "Imagens", 'd', 1);
-    adicionarEntrada(disco, endUsuario, usuario, "Músicas", 'd', 1);
-    adicionarEntrada(disco, endUsuario, usuario, "Público", 'd', 1);
-    adicionarEntrada(disco, endUsuario, usuario, "Vídeos", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "bin", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "boot", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "dev", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "etc", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "lib", 'd', 1);
-    adicionarEntrada(disco, endRaiz, usuario, "opt", 'd', 1);
+    adicionarEntrada(disco, endUsuario, usuario, "Documentos", 'd', 1, "");
+    adicionarEntrada(disco, endUsuario, usuario, "Downloads", 'd', 1, "");
+    adicionarEntrada(disco, endUsuario, usuario, "Imagens", 'd', 1, "");
+    adicionarEntrada(disco, endUsuario, usuario, "Músicas", 'd', 1, "");
+    adicionarEntrada(disco, endUsuario, usuario, "Público", 'd', 1, "");
+    adicionarEntrada(disco, endUsuario, usuario, "Vídeos", 'd', 1, "");
+    adicionarEntrada(disco, endRaiz, usuario, "bin", 'd', 1, "");
+    adicionarEntrada(disco, endRaiz, usuario, "boot", 'd', 1, "");
+    adicionarEntrada(disco, endRaiz, usuario, "dev", 'd', 1, "");
+    adicionarEntrada(disco, endRaiz, usuario, "etc", 'd', 1, "");
+    adicionarEntrada(disco, endRaiz, usuario, "lib", 'd', 1, "");
+    adicionarEntrada(disco, endRaiz, usuario, "opt", 'd', 1, "");
 
     return endUsuario;
 }

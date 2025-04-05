@@ -124,6 +124,7 @@ void rmdir(Bloco *disco, int endEntrada, char *nomeDir) {
                     disco[end].dir.arquivo[i].endInode = disco[end].dir.arquivo[i + 1].endInode;
                     i++;
                 }
+                disco[disco[disco[end].dir.arquivo[pos].endInode].inode.endDireto[0]].dir.TL = 0;
                 disco[end].dir.TL--;
                 pushBlocoLivre(disco, disco[inodeDir].inode.endDireto[0]);
                 pushBlocoLivre(disco, inodeDir);
@@ -390,11 +391,28 @@ void chmod(Bloco *disco, int endDir, char *nomeArq, char *permUsuario, char *tip
         printf("Arquivo não encontrado\n");
 }
 
+char validarUnlink(char *comando, char *nomeArq) {
+    char tipo = -1;
+    int i, j;
+
+    if (comando[7] == '-' && comando[8] == 's')
+        tipo = 1;
+    else if (comando[7] == '-' && comando[8] == 'h')
+        tipo = 2;
+
+    i = 10;
+    j = 0;
+    while (i < strlen(comando))
+        nomeArq[j++] = comando[i++];
+    nomeArq[j] = '\0';
+    if (i == strlen(comando))
+        return tipo;
+    return -1;
+}
+
 char linkValido(char *comando, char *origem, char *destino) {
     char tipo = 0;
     int i = 8, j;
-
-    printf("%s\n", comando);
 
     if (comando[5] == '-' && comando[6] == 's')
         tipo = 1;
@@ -500,10 +518,211 @@ char validarCriacaoArq(char *comando, char *nomeArq, int *tam) {
     return 0;
 }
 
-void criarLinkFisico() {
+int buscaEntradaDiretorio(Bloco *disco, int raiz, int endAtual, char *comando, char *usuario) {
+    char caminho[50], entrada[15] = "", caminhoUsuario[20] = "/home/", caminhoTotalAux[50];
+    int i = 0, j = 0, busca, pos, novoEnd = endAtual, endBusca;
+
+    while (i < strlen(comando))
+        caminho[j++] = comando[i++];
+    caminho[j] = '\0';
+    strcat(caminhoUsuario, usuario);
+
+    if (strlen(caminho) > 0) {
+        if (!strcmp(caminho, "/"))
+            novoEnd = raiz;
+        else {
+            if (caminho[0] == '/') {
+                // Navegar pelo caminho absoluto
+                strcpy(caminhoTotalAux, "/");
+                proxEntrada(caminho, entrada);
+                endBusca = raiz;
+                busca = buscaArquivo(disco, endBusca, entrada, &pos, &endAtual);
+                while (busca != -1 && strlen(entrada) > 0) {
+                    if (!strcmp(entrada, "..")) {
+                        i = strlen(caminhoTotalAux);
+                        while (i > 1 && caminhoTotalAux[i] != '/') {
+                            caminhoTotalAux[i] = '\0';
+                            i--;
+                        }
+                        caminhoTotalAux[i] = '\0';
+                    } else {
+                        if (strcmp(entrada, "."))
+                            if (!strcmp(caminhoTotalAux, "/"))
+                                strcat(caminhoTotalAux, entrada);
+                            else {
+                                strcat(caminhoTotalAux, "/");
+                                strcat(caminhoTotalAux, entrada);
+                            }
+                    }
+                    endBusca = disco[endAtual].dir.arquivo[pos].endInode;
+                    proxEntrada(caminho, entrada);
+                    if (strlen(entrada) > 0)
+                        busca = buscaArquivo(disco, endBusca, entrada, &pos, &endAtual);
+                }
+                if (busca == -1)
+                    printf("bash: cd: Arquivo ou diretório inexistente\n");
+                else {
+                    novoEnd = disco[endAtual].dir.arquivo[pos].endInode;
+                }
+            } else {
+                if (!strcmp(caminho, ".")) {
+                    novoEnd = disco[disco[endAtual].inode.endDireto[0]].dir.arquivo[0].endInode;
+                } else {
+                    if (!strcmp(caminho, "..")) {
+                        novoEnd = disco[disco[endAtual].inode.endDireto[0]].dir.arquivo[1].endInode;
+                    } else {
+                        proxEntrada(caminho, entrada);
+                        endBusca = endAtual;
+                        busca = buscaArquivo(disco, endBusca, entrada, &pos, &endAtual);
+                        while (busca != -1 && strlen(entrada) > 0) {
+                            if (!strcmp(entrada, "..")) {
+                                i = strlen(caminhoTotalAux);
+                                while (i > 1 && caminhoTotalAux[i] != '/') {
+                                    caminhoTotalAux[i] = '\0';
+                                    i--;
+                                }
+                                caminhoTotalAux[i] = '\0';
+                            } else {
+                                if (strcmp(entrada, "."))
+                                    if (!strcmp(caminhoTotalAux, "/"))
+                                        strcat(caminhoTotalAux, entrada);
+                                    else {
+                                        strcat(caminhoTotalAux, "/");
+                                        strcat(caminhoTotalAux, entrada);
+                                    }
+                            }
+                            endBusca = disco[endAtual].dir.arquivo[pos].endInode;
+                            proxEntrada(caminho, entrada);
+                            if (strlen(entrada) > 0)
+                                busca = buscaArquivo(disco, endBusca, entrada, &pos, &endAtual);
+                        }
+                        if (busca == -1)
+                            printf("bash: cd: Arquivo ou diretório inexistente\n");
+                        else {
+                            novoEnd = disco[endAtual].dir.arquivo[pos].endInode;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (bad(disco[novoEnd])) {
+        novoEnd = -1;
+        printf("Erro: Diretório corrompido\n");
+        return novoEnd;
+    }
+    if (disco[novoEnd].inode.permissao[0] == 'd')
+        return novoEnd;
+    return -1;
 }
 
-void criarLinkSimbolico(Bloco *disco, int endDir, char *origem, char *destino) {
+void criarLinkFisico(Bloco *disco, int raiz, char *usuario, int endDir, char *origem, char *destino) {
+    int endOrigem, i = 0, j = 0, k, pos, endEntrada, endDestino, inodeOrigem;
+    char busca, caminhoOrigem[50], caminhoDestino[50], nomeArquivoOrigem[15], nomeArquivoDestino[15], aux[50] = "";
+
+    strcpy(caminhoOrigem, origem);
+    strcpy(caminhoDestino, destino);
+    if (origem[0] != '/' && origem[0] != '.') {
+        strcat(aux, "./");
+        strcat(aux, origem);
+        strcpy(origem, aux);
+    }
+    aux[0] = '\0';
+    if (destino[0] != '/' && destino[0] != '.') {
+        strcat(aux, "./");
+        strcat(aux, destino);
+        strcpy(destino, aux);
+    }
+    if (origem[0] == '/' || origem[0] == '.') {
+        i = strlen(origem) - 1;
+        while (i >= 0 && origem[i] != '/')
+            i--;
+        k = i;
+        i++;
+        while (i < strlen(origem))
+            nomeArquivoOrigem[j++] = origem[i++];
+        nomeArquivoOrigem[j] = '\0';
+        if (k != 1)
+            origem[k] = '\0';
+        else
+            origem[k + 1] = '\0';
+        if (origem[0] == '\0')
+            strcpy(origem, "/");
+    } else
+        strcpy(nomeArquivoOrigem, origem);
+
+    if (destino[0] == '/' || destino[0] == '.') {
+        i = strlen(destino) - 1;
+        while (i >= 0 && destino[i] != '/')
+            i--;
+        k = i;
+        i++;
+        j = 0;
+        while (i < strlen(destino))
+            nomeArquivoDestino[j++] = destino[i++];
+        nomeArquivoDestino[j] = '\0';
+        if (k != 1)
+            destino[k] = '\0';
+        else
+            destino[k + 1] = '\0';
+        if (destino[0] == '\0')
+            strcpy(destino, "/");
+    } else
+        strcpy(nomeArquivoDestino, destino);
+
+    endOrigem = buscaEntradaDiretorio(disco, raiz, endDir, origem, usuario);
+    busca = buscaArquivo(disco, endOrigem, nomeArquivoOrigem, &pos, &endEntrada);
+    if (busca != -1) {
+        endDestino = buscaEntradaDiretorio(disco, raiz, endDir, destino, usuario);
+        if (endDestino != -1) {
+            adicionarEntrada(disco, endDestino, usuario, nomeArquivoDestino, 'l', 1, origem);
+            inodeOrigem = disco[endEntrada].dir.arquivo[pos].endInode;
+            disco[inodeOrigem].inode.contadorLink++;
+            busca = buscaArquivo(disco, endDestino, nomeArquivoDestino, &pos, &endEntrada);
+            pushBlocoLivre(disco, disco[disco[endEntrada].dir.arquivo[pos].endInode].inode.endDireto[0]);
+            pushBlocoLivre(disco, disco[endEntrada].dir.arquivo[pos].endInode);
+            disco[endEntrada].dir.arquivo[pos].endInode = inodeOrigem;
+        } else
+            printf("ln: falha ao criar link simbólico '%s': Arquivo ou diretório inexistente\n", caminhoDestino);
+    } else
+        printf("ln: falha ao criar link simbólico '%s': Arquivo ou diretório inexistente\n", caminhoOrigem);
+}
+
+void criarLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, char *origem, char *destino) {
+    int i = 0, j = 0, k, endDestino;
+    char caminhoDestino[50], aux[50], nomeArquivoDestino[15];
+
+    strcpy(caminhoDestino, destino);
+    aux[0] = '\0';
+    if (destino[0] != '/' && destino[0] != '.') {
+        strcat(aux, "./");
+        strcat(aux, destino);
+        strcpy(destino, aux);
+    }
+    if (destino[0] == '/' || destino[0] == '.') {
+        i = strlen(destino) - 1;
+        while (i >= 0 && destino[i] != '/')
+            i--;
+        k = i;
+        i++;
+        while (i < strlen(destino))
+            nomeArquivoDestino[j++] = destino[i++];
+        nomeArquivoDestino[j] = '\0';
+        if (k != 1)
+            destino[k] = '\0';
+        else
+            destino[k + 1] = '\0';
+        if (destino[0] == '\0')
+            strcpy(destino, "/");
+    } else
+        strcpy(nomeArquivoDestino, destino);
+
+    endDestino = buscaEntradaDiretorio(disco, raiz, endDir, destino, usuario);
+
+    if (endDestino != -1)
+        adicionarEntrada(disco, endDestino, usuario, nomeArquivoDestino, 'l', 1, origem);
+    else
+        printf("ln: falha ao criar link simbólico '%s': Arquivo ou diretório inexistente", caminhoDestino);
 }
 
 char validarCriacaoDir(char *comando, char *nomeDir) {
@@ -537,8 +756,16 @@ void visualizarArquivo(Bloco *disco, int endDir, char *comando) {
                     printf("Arquivo %s visualizado\n", disco[end].dir.arquivo[pos].nome);
                 else
                     printf("O arquivo %s está corrompido\n", nomeArquivo);
-            } else
-                printf("O arquivo %s é um diretório\n", disco[end].dir.arquivo[pos].nome);
+            } else {
+                if (disco[disco[end].dir.arquivo[pos].endInode].inode.permissao[0] == 'l')
+                    if (disco[disco[end].dir.arquivo[pos].endInode].bad != 1 && !corrompido(
+                            disco, disco[disco[end].dir.arquivo[pos].endInode]))
+                        printf("Arquivo %s visualizado\n", disco[end].dir.arquivo[pos].nome);
+                    else
+                        printf("O arquivo %s está corrompido\n", nomeArquivo);
+                else
+                    printf("O arquivo %s é um diretório\n", disco[end].dir.arquivo[pos].nome);
+            }
         } else
             printf("Arquivo não encontrado\n");
     } else
@@ -699,7 +926,7 @@ void diminuirBlocos(Bloco *disco, int endInode, int quant) {
             endSimples = disco[endInode].inode.endSimplesIndireto;
             if (endSimples != endNulo()) {
                 while (i != 0 && disco[endSimples].inodeIndireto.endInd[i] == endNulo())
-                    i++;
+                    i--;
                 while (i >= 0 && quant > 0) {
                     pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[i]);
                     disco[endSimples].inodeIndireto.endInd[i--] = -1;
@@ -714,7 +941,7 @@ void diminuirBlocos(Bloco *disco, int endInode, int quant) {
             if (quant > 0) {
                 i = QTDE_INODE_DIRETO - 1;
                 while (i != 0 && disco[endInode].inode.endDireto[i] == endNulo())
-                    i++;
+                    i--;
                 while (i >= 0 && quant > 0) {
                     pushBlocoLivre(disco, disco[endInode].inode.endDireto[i]);
                     disco[endInode].inode.endDireto[i--] = -1;
@@ -740,6 +967,7 @@ void rm(Bloco *disco, int endEntrada, char *nomeArq) {
                     disco[end].dir.arquivo[i].endInode = disco[end].dir.arquivo[i + 1].endInode;
                     i++;
                 }
+                disco[disco[disco[end].dir.arquivo[pos].endInode].inode.endDireto[0]].dir.TL = 0;
                 disco[end].dir.TL--;
                 pushBlocoLivre(disco, disco[inodeArq].inode.endDireto[0]);
                 pushBlocoLivre(disco, inodeArq);
@@ -760,12 +988,113 @@ void rm(Bloco *disco, int endEntrada, char *nomeArq) {
     }
 }
 
+void removerLinkFisico(Bloco *disco, int raiz, char *usuario, int endDir, char *destino) {
+    int i = 0, j = 0, k, endDestino, pos, endEntrada, inode;
+    char caminhoArquivo[50], aux[50], nomeArquivo[15];
+
+    strcpy(caminhoArquivo, destino);
+    aux[0] = '\0';
+    if (destino[0] != '/' && destino[0] != '.') {
+        strcat(aux, "./");
+        strcat(aux, destino);
+        strcpy(destino, aux);
+    }
+    if (destino[0] == '/' || destino[0] == '.') {
+        i = strlen(destino) - 1;
+        while (i >= 0 && destino[i] != '/')
+            i--;
+        k = i;
+        i++;
+        while (i < strlen(destino))
+            nomeArquivo[j++] = destino[i++];
+        nomeArquivo[j] = '\0';
+        if (k != 1)
+            destino[k] = '\0';
+        else
+            destino[k + 1] = '\0';
+        if (destino[0] == '\0')
+            strcpy(destino, "/");
+    } else
+        strcpy(nomeArquivo, destino);
+
+    endDestino = buscaEntradaDiretorio(disco, raiz, endDir, destino, usuario);
+    if (endDestino != -1) {
+        if (buscaArquivo(disco, endDestino, nomeArquivo, &pos, &endEntrada)) {
+            inode = disco[endEntrada].dir.arquivo[pos].endInode;
+            if (disco[inode].inode.contadorLink > 1) {
+                i = pos;
+                while (i < disco[endEntrada].dir.TL - 1) {
+                    strcpy(disco[endEntrada].dir.arquivo[i].nome, disco[endEntrada].dir.arquivo[i + 1].nome);
+                    disco[endEntrada].dir.arquivo[i].endInode = disco[endEntrada].dir.arquivo[i + 1].endInode;
+                    i++;
+                }
+                disco[endEntrada].dir.TL--;
+                disco[inode].inode.contadorLink--;
+                //diminuirBlocos(disco, inode, 1);
+                //pushBlocoLivre(disco, inode);
+            }
+        }
+    }
+    else
+        printf("ln: falha ao criar link simbólico '%s': Arquivo ou diretório inexistente", caminhoArquivo);
+}
+
+void removerLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, char *destino) {
+    int i = 0, j = 0, k, endDestino, pos, endEntrada, inode;
+    char caminhoArquivo[50], aux[50], nomeArquivo[15];
+
+    strcpy(caminhoArquivo, destino);
+    aux[0] = '\0';
+    if (destino[0] != '/' && destino[0] != '.') {
+        strcat(aux, "./");
+        strcat(aux, destino);
+        strcpy(destino, aux);
+    }
+    if (destino[0] == '/' || destino[0] == '.') {
+        i = strlen(destino) - 1;
+        while (i >= 0 && destino[i] != '/')
+            i--;
+        k = i;
+        i++;
+        while (i < strlen(destino))
+            nomeArquivo[j++] = destino[i++];
+        nomeArquivo[j] = '\0';
+        if (k != 1)
+            destino[k] = '\0';
+        else
+            destino[k + 1] = '\0';
+        if (destino[0] == '\0')
+            strcpy(destino, "/");
+    } else
+        strcpy(nomeArquivo, destino);
+
+    endDestino = buscaEntradaDiretorio(disco, raiz, endDir, destino, usuario);
+    if (endDestino != -1) {
+        if (buscaArquivo(disco, endDestino, nomeArquivo, &pos, &endEntrada)) {
+            inode = disco[endEntrada].dir.arquivo[pos].endInode;
+            if (disco[inode].inode.contadorLink == 1) {
+                i = pos;
+                while (i < disco[endEntrada].dir.TL - 1) {
+                    strcpy(disco[endEntrada].dir.arquivo[i].nome, disco[endEntrada].dir.arquivo[i + 1].nome);
+                    disco[endEntrada].dir.arquivo[i].endInode = disco[endEntrada].dir.arquivo[i + 1].endInode;
+                    i++;
+                }
+                disco[endEntrada].dir.TL--;
+                diminuirBlocos(disco, inode, 1);
+                pushBlocoLivre(disco, inode);
+            }
+        }
+    }
+    else
+        printf("ln: falha ao criar link simbólico '%s': Arquivo ou diretório inexistente", caminhoArquivo);
+}
+
 void touch(Bloco *disco, int end, char *usuario, char *nomeArq, int tam) {
     int pos, endArq, tamAnt, diferenca, qtdeBlocos, restoUltBloco, novaQuant;
 
     if (buscaArquivo(disco, end, nomeArq, &pos, &endArq) == -1) {
         if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) < qtdeBlocosLivres(disco))
-            adicionarEntrada(disco, end, usuario, nomeArq, 'a', tam);
+            adicionarEntrada(disco, end, usuario, nomeArq, 'a', tam, "");
         else
             printf("Espaço em disco insuficiente!\n");
     } else {
@@ -794,32 +1123,11 @@ void mkdir(Bloco *disco, int end, char *usuario, char *nomeDir) {
 
     if (buscaArquivo(disco, end, nomeDir, &pos, &endArq) == -1) {
         if ((float) 1 / (float) 10 < qtdeBlocosLivres(disco))
-            adicionarEntrada(disco, end, usuario, nomeDir, 'd', 1);
+            adicionarEntrada(disco, end, usuario, nomeDir, 'd', 1, "");
         else
             printf("Espaço em disco insuficiente!\n");
     } else
         printf("mkdir: não foi possível criar o diretório “%s”: Arquivo existe\n", nomeDir);
-}
-
-void proxEntrada(char *caminho, char *entrada) {
-    int i = 0, j = 0;
-
-    if (caminho[0] == '/') {
-        i = 0;
-        while (i < strlen(caminho) - 1)
-            caminho[i++] = caminho[i + 1];
-        caminho[i] = '\0';
-    }
-
-    i = 0;
-    while (i < strlen(caminho) && caminho[i] != '/')
-        entrada[j++] = caminho[i++];
-    entrada[j] = '\0';
-
-    i = 0;
-    while (i < strlen(caminho) - strlen(entrada))
-        caminho[i++] = caminho[i + strlen(entrada)];
-    caminho[i] = '\0';
 }
 
 int navegar(Bloco *disco, int raiz, int endUsuario, int endAtual, char *comando, char *usuario,
@@ -1037,23 +1345,32 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
                 printf("Não foi possível criar o link '%s' para '%s': Arquivo ou diretório inexistente\n", origem,
                        destino);
             else {
-                if (tipoLink == 1) {
-                    criarLinkSimbolico(disco, end, origem, destino);
-                } else {
-                    criarLinkFisico(disco, end, destino);
-                }
+                if (tipoLink == 1)
+                    criarLinkSimbolico(disco, raiz, usuario, end, origem, destino);
+                else
+                    criarLinkFisico(disco, raiz, usuario, end, origem, destino);
             }
             break;
         case 6:
             setBad(disco, comando, tamDisco);
             break;
         case 7:
-            // unlink
+            tipoLink = validarUnlink(comando, nomeArq);
+            if (tipoLink == -1)
+                printf("Não foi possível remover o link '%s' para '%s': Arquivo ou diretório inexistente\n", origem,
+                       destino);
+            else if (tipoLink == 1)
+                removerLinkSimbolico(disco, raiz, usuario, end, nomeArq);
+            else
+                removerLinkFisico(disco, raiz, usuario, end, nomeArq);
             break;
         case 8:
             if (validarCriacaoArq(comando, nomeArq, &tam))
                 if (strlen(nomeArq) <= 14)
-                    touch(disco, end, usuario, nomeArq, tam);
+                    if (tam <= 1600)
+                        touch(disco, end, usuario, nomeArq, tam);
+                    else
+                        printf("Tamanho do arquivo muito grande\n");
                 else
                     printf("Nome de arquivo muito longo\n");
             else
