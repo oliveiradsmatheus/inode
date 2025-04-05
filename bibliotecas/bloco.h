@@ -177,6 +177,50 @@ char bad(Bloco bloco) {
     return bloco.bad;
 }
 
+char corrompido(Bloco *disco, Bloco blocoInode) {
+    char corrompido = 0;
+    int i, j, k, indSimples, indDuplo, indTriplo;
+
+    for (i = 0; i < QTDE_INODE_DIRETO && blocoInode.inode.endDireto[i] != endNulo() && !corrompido; i++)
+        if (bad(disco[blocoInode.inode.endDireto[i]]))
+            corrompido = 1;
+
+    indSimples = blocoInode.inode.endSimplesIndireto;
+    if (indSimples != endNulo()) {
+        for (i = 0; i < QTDE_INODE_INDIRETO && disco[indSimples].inodeIndireto.endInd[i] != endNulo() && !corrompido; i
+             ++)
+            if (bad(disco[disco[indSimples].inodeIndireto.endInd[i]]))
+                corrompido = 1;
+
+        indDuplo = blocoInode.inode.endDuploIndireto;
+        if (indDuplo != endNulo()) {
+            for (i = 0; i < QTDE_INODE_INDIRETO && disco[indDuplo].inodeIndireto.endInd[i] != endNulo() && !corrompido;
+                 i++) {
+                indSimples = disco[indDuplo].inodeIndireto.endInd[i];
+                for (j = 0; j < QTDE_INODE_INDIRETO && disco[indSimples].inodeIndireto.endInd[j] != endNulo() && !
+                            corrompido; j++)
+                    if (bad(disco[disco[indSimples].inodeIndireto.endInd[j]]))
+                        corrompido = 1;
+            }
+            indTriplo = blocoInode.inode.endTriploIndireto;
+            if (indTriplo != endNulo())
+                for (i = 0; i < QTDE_INODE_INDIRETO && disco[indTriplo].inodeIndireto.endInd[i] != endNulo() && !
+                            corrompido; i++) {
+                    indDuplo = disco[indTriplo].inodeIndireto.endInd[i];
+                    for (j = 0; j < QTDE_INODE_INDIRETO && disco[indDuplo].inodeIndireto.endInd[j] != endNulo() && !
+                                corrompido; j++) {
+                        indSimples = disco[indDuplo].inodeIndireto.endInd[j];
+                        for (k = 0; k < QTDE_INODE_INDIRETO && disco[indSimples].inodeIndireto.endInd[k] != endNulo() &&
+                                    !corrompido; k++)
+                            if (bad(disco[disco[indSimples].inodeIndireto.endInd[k]]))
+                                corrompido = 1;
+                    }
+                }
+        }
+    }
+    return corrompido;
+}
+
 char listaVazia(Bloco disco) {
     return disco.listaBlocosLivres.topo == endNulo();
 }
@@ -510,7 +554,7 @@ void inserirInodeIS(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, 
         }
     }
     *qtBlocos = *qtBlocos - utilizados;
-    if (inseridoT && *qtBlocos > 0 ) {
+    if (inseridoT && *qtBlocos > 0) {
         disco[endInodeInd].inodeIndireto.endInd[disco[endInodeInd].inodeIndireto.TL] = criarInode(
             disco, usuario, tipoArq, *qtBlocos, endInode, "");
         if (disco[endInodeInd].inodeIndireto.endInd[disco[endInodeInd].inodeIndireto.TL] != endNulo())

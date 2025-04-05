@@ -113,21 +113,24 @@ void rmdir(Bloco *disco, int endEntrada, char *nomeDir) {
     int end, pos, i = 0, inodeDir;
 
     if (buscaArquivo(disco, endEntrada, nomeDir, &pos, &end) == -1)
-        printf("rmdir: falhou em remover '%s': Arquivo ou diretório inexistente\n", nomeDir);
+        printf("rmdir: falhou em remover '%s': Diretório inexistente\n", nomeDir);
     else {
         inodeDir = disco[end].dir.arquivo[pos].endInode;
-        if (dirVazio(disco[disco[inodeDir].inode.endDireto[0]])) {
-            i = pos;
-            while (i < disco[end].dir.TL - 1) {
-                strcpy(disco[end].dir.arquivo[i].nome, disco[end].dir.arquivo[i + 1].nome);
-                disco[end].dir.arquivo[i].endInode = disco[end].dir.arquivo[i + 1].endInode;
-                i++;
-            }
-            disco[end].dir.TL--;
-            pushBlocoLivre(disco, disco[inodeDir].inode.endDireto[0]);
-            pushBlocoLivre(disco, inodeDir);
+        if (disco[disco[end].dir.arquivo[pos].endInode].inode.permissao[0] == 'd') {
+            if (dirVazio(disco[disco[inodeDir].inode.endDireto[0]])) {
+                i = pos;
+                while (i < disco[end].dir.TL - 1) {
+                    strcpy(disco[end].dir.arquivo[i].nome, disco[end].dir.arquivo[i + 1].nome);
+                    disco[end].dir.arquivo[i].endInode = disco[end].dir.arquivo[i + 1].endInode;
+                    i++;
+                }
+                disco[end].dir.TL--;
+                pushBlocoLivre(disco, disco[inodeDir].inode.endDireto[0]);
+                pushBlocoLivre(disco, inodeDir);
+            } else
+                printf("rmdir: falhou em remover '%s': Diretório não vazio\n", nomeDir);
         } else
-            printf("rmdir: falhou em remover '%s': Diretório não vazio\n", nomeDir);
+            printf("rmdir: falhou em remover '%s': Não é um diretório\n", nomeDir);
     }
 }
 
@@ -424,6 +427,17 @@ char validarRemocao(char *comando, char *nomeArquivo) {
     return 0;
 }
 
+char validarRemocaoArquivo(char *comando, char *nomeArquivo) {
+    int i = 3, j = 0;
+
+    while (i < strlen(comando) && comando[i] != ' ')
+        nomeArquivo[j++] = comando[i++];
+    nomeArquivo[j] = '\0';
+    if (i == strlen(comando))
+        return 1;
+    return 0;
+}
+
 char validarAlteracaoPermissao(char *comando, char *usuario, char *tipo, char *nomeArquivo) {
     int i, j;
     char valido = 0;
@@ -517,9 +531,13 @@ void visualizarArquivo(Bloco *disco, int endDir, char *comando) {
     if (i == strlen(comando) && strlen(nomeArquivo) < 15) {
         busca = buscaArquivo(disco, endDir, nomeArquivo, &pos, &end);
         if (busca != -1) {
-            if (disco[disco[end].dir.arquivo[pos].endInode].inode.permissao[0] == '-')
-                printf("Arquivo %s visualizado\n", disco[end].dir.arquivo[pos].nome);
-            else
+            if (disco[disco[end].dir.arquivo[pos].endInode].inode.permissao[0] == '-') {
+                if (disco[disco[end].dir.arquivo[pos].endInode].bad != 1 && !corrompido(
+                        disco, disco[disco[end].dir.arquivo[pos].endInode]))
+                    printf("Arquivo %s visualizado\n", disco[end].dir.arquivo[pos].nome);
+                else
+                    printf("O arquivo %s está corrompido\n", nomeArquivo);
+            } else
                 printf("O arquivo %s é um diretório\n", disco[end].dir.arquivo[pos].nome);
         } else
             printf("Arquivo não encontrado\n");
@@ -538,6 +556,8 @@ void aumentarBlocos(Bloco *disco, int endInode, int quant) {
         quant--;
     }
     if (quant > 0) {
+        if (disco[endInode].inode.endSimplesIndireto == endNulo())
+            disco[endInode].inode.endSimplesIndireto = criarInodeInd(disco);
         i = 0;
         endSimples = disco[endInode].inode.endSimplesIndireto;
         while (i < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[i] != endNulo())
@@ -597,7 +617,6 @@ void aumentarBlocos(Bloco *disco, int endInode, int quant) {
         }
     }
 }
-
 
 void diminuirBlocos(Bloco *disco, int endInode, int quant) {
     int i, j, k, endSimples, endDuplo, endTriplo;
@@ -702,6 +721,41 @@ void diminuirBlocos(Bloco *disco, int endInode, int quant) {
                     quant--;
                 }
             }
+        }
+    }
+}
+
+void rm(Bloco *disco, int endEntrada, char *nomeArq) {
+    int end, pos, i = 0, inodeArq, tam;
+
+    if (buscaArquivo(disco, endEntrada, nomeArq, &pos, &end) == -1)
+        printf("rm: falhou em remover '%s': Arquivo ou diretório inexistente\n", nomeArq);
+    else {
+        inodeArq = disco[end].dir.arquivo[pos].endInode;
+        if (disco[inodeArq].inode.permissao[0] == 'd') {
+            if (dirVazio(disco[disco[inodeArq].inode.endDireto[0]])) {
+                i = pos;
+                while (i < disco[end].dir.TL - 1) {
+                    strcpy(disco[end].dir.arquivo[i].nome, disco[end].dir.arquivo[i + 1].nome);
+                    disco[end].dir.arquivo[i].endInode = disco[end].dir.arquivo[i + 1].endInode;
+                    i++;
+                }
+                disco[end].dir.TL--;
+                pushBlocoLivre(disco, disco[inodeArq].inode.endDireto[0]);
+                pushBlocoLivre(disco, inodeArq);
+            } else
+                printf("rm: falhou em remover '%s': Diretório não vazio\n", nomeArq);
+        } else {
+            i = pos;
+            while (i < disco[end].dir.TL - 1) {
+                strcpy(disco[end].dir.arquivo[i].nome, disco[end].dir.arquivo[i + 1].nome);
+                disco[end].dir.arquivo[i].endInode = disco[end].dir.arquivo[i + 1].endInode;
+                i++;
+            }
+            disco[end].dir.TL--;
+            tam = (int) (ceil)((float) disco[inodeArq].inode.tamanho / (float) 10);
+            diminuirBlocos(disco, inodeArq, tam);
+            pushBlocoLivre(disco, inodeArq);
         }
     }
 }
@@ -963,7 +1017,8 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
                 rmdir(disco, endAtual, nomeArq);
             break;
         case 3:
-            //rm
+            if (validarRemocaoArquivo(comando, nomeArq))
+                rm(disco, endAtual, nomeArq);
             break;
         case 4:
             endAtual = navegar(disco, raiz, endUsuario, endAtual, comando, usuario, caminho);
