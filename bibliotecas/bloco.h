@@ -497,6 +497,120 @@ int buscaArquivo(Bloco *disco, int endDir, char *nomeArquivo, int *posicao, int 
     return -1;
 }
 
+int maior(Bloco *disco, int raiz, int tamDisco) {
+    int endAtual = raiz, maior = 0;
+
+    while (endAtual < tamDisco) {
+        if (endAtual != endNulo() && disco[endAtual].inode.permissao[0] == '-')
+            if (disco[endAtual].inode.tamanho > maior)
+                maior = disco[endAtual].inode.tamanho;
+        endAtual++;
+    }
+    return (int) (ceil(((float) maior) / (float) 10));
+}
+
+void listarStatus(Bloco *disco, int end) {
+    int i, j, k, l, endSimples, endDuplo, endTriplo;
+
+    i = 0;
+    while (i < QTDE_INODE_DIRETO && disco[end].inode.endDireto[i] != endNulo()) {
+        for (j = 2; j < disco[disco[end].inode.endDireto[i]].dir.TL; j++)
+            if (!dirVazio(disco[disco[end].inode.endDireto[i]])) {
+                if (disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].inode.permissao[0] == '-')
+                    if (!corrompido(disco, disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode]))
+                        printf("%s - Íntegro\n", disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
+                    else
+                        printf("%s - Corrompido\n", disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
+            }
+        i++;
+    }
+    i = 0;
+    if (disco[end].inode.endSimplesIndireto != endNulo()) {
+        endSimples = disco[end].inode.endSimplesIndireto;
+        while (i < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[i] !=
+               endNulo()) {
+            for (j = 2; j < disco[disco[endSimples].inodeIndireto.endInd[i]].dir.TL; j++)
+                if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[i]]))
+                    if (disco[disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode].inode.permissao[
+                            0] == '-')
+                        if (!corrompido(
+                            disco, disco[disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode]))
+                            printf("%s - Íntegro\n",
+                                   disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].nome);
+                        else
+                            printf("%s - Corrompido\n",
+                                   disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].nome);
+            i++;
+        }
+        if (disco[end].inode.endDuploIndireto != endNulo()) {
+            i = 0;
+            endDuplo = disco[end].inode.endDuploIndireto;
+            while (i < QTDE_INODE_INDIRETO && disco[endDuplo].inodeIndireto.endInd[i] != endNulo()) {
+                j = 0;
+                endSimples = disco[endDuplo].inodeIndireto.endInd[i];
+                while (j < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[j] != endNulo()) {
+                    for (k = 2; k < disco[disco[endSimples].inodeIndireto.endInd[j]].dir.TL; k++)
+                        if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[j]]))
+                            if (disco[disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].endInode].inode.
+                                permissao[0] == '-')
+                                if (!corrompido(
+                                    disco,
+                                    disco[disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].endInode]))
+                                    printf("%s - Íntegro\n",
+                                           disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].nome);
+                                else
+                                    printf("%s - Corrompido\n",
+                                           disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].nome);
+                    j++;
+                }
+                i++;
+            }
+            if (disco[end].inode.endTriploIndireto != endNulo()) {
+                i = 0;
+                endTriplo = disco[end].inode.endTriploIndireto;
+                while (i < QTDE_INODE_INDIRETO && disco[endTriplo].inodeIndireto.endInd[i] != endNulo()) {
+                    j = 0;
+                    endDuplo = disco[endTriplo].inodeIndireto.endInd[i];
+                    while (j < QTDE_INODE_INDIRETO && disco[endDuplo].inodeIndireto.endInd[j] != endNulo()) {
+                        k = 0;
+                        endSimples = disco[endDuplo].inodeIndireto.endInd[j];
+                        while (k < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[k] != endNulo()) {
+                            for (l = 2; l < disco[disco[endSimples].inodeIndireto.endInd[k]].dir.TL; l++)
+                                if (!dirVazio(disco[endSimples]))
+                                    if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].endInode].
+                                        inode.permissao[0] == '-')
+                                        if (!corrompido(
+                                            disco,
+                                            disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                endInode]))
+                                            printf("%s - Íntegro\n",
+                                                   disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                   nome);
+                                        else
+                                            printf("%s - Corrompido\n",
+                                                   disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                   nome);
+                            k++;
+                        }
+                        j++;
+                    }
+                    i++;
+                }
+            }
+        }
+    }
+}
+
+void status(Bloco *disco, int raiz, int tamDisco) {
+    int end = raiz;
+
+    while (end < tamDisco) {
+        if (disco[end].inode.permissao[0] != '\0')
+            listarStatus(disco, end);
+        end++;
+    }
+}
+
 void adicionarArquivo(Bloco *disco, int endDir, char *nomeArquivo, int endInode) {
     int pos, endArq;
 
@@ -703,7 +817,7 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
                 printf("Erro: Espaço em disco insuficiente!\n");
         } else if (!dirCheio(disco[disco[end].inode.endDireto[i]])) {
             adicionarArquivo(disco, disco[end].inode.endDireto[i], nomeEntrada,
-                             criarInode(disco, usuario, tipo, tam, end, ""));
+                             criarInode(disco, usuario, tipo, tam, end, caminhoLink));
         }
     } else {
         endPai = disco[disco[end].inode.endDireto[0]].dir.arquivo[1].endInode;

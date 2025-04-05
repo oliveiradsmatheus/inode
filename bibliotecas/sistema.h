@@ -32,8 +32,7 @@ void execTerminal(Bloco *disco, int endRaiz, int endUsuario, char *usuario, int 
     do {
         if (caminhoUsuario(caminho, usuario, caminhoAbreviado)) {
             printf("%s@linux: %s [%d] $ ", usuario, caminhoAbreviado, endAtual);
-        }
-        else
+        } else
             printf("%s@linux: %s [%d] $ ", usuario, caminho, endAtual);
         scanf(" %[^\n]", comando);
         c = eComando(comando);
