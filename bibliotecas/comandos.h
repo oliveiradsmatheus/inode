@@ -220,15 +220,6 @@ void listarAtributos(Bloco *disco, int end) {
     }
 }
 
-char ultimoArquivo(Bloco *disco, int endDir, int posDir) {
-    int i = posDir + 1;
-    while (i < disco[endDir].dir.TL && disco[disco[endDir].dir.arquivo[i].endInode].inode.permissao[0] == '-')
-        i++;
-    if (i == disco[endDir].dir.TL)
-        return 1;
-    return 0;
-}
-
 void arvore(Bloco *disco, int end, int nivel, int *vet) {
     int i = 1, j, k;
     char espaco[400] = "";
@@ -246,17 +237,17 @@ void arvore(Bloco *disco, int end, int nivel, int *vet) {
     i = 0;
     while (i < QTDE_INODE_DIRETO && disco[end].inode.endDireto[i] != endNulo()) {
         for (j = 2; j < disco[disco[end].inode.endDireto[i]].dir.TL; j++) {
-            if (disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].inode.permissao[0] == 'd') {
+            //if (disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].inode.permissao[0] == 'd') {
                 k = nivel * 4 - 4;
                 espaco[k] = '\0';
-                if (ultimoArquivo(disco, disco[end].inode.endDireto[i], j)) {
+                if (j + 1 == disco[disco[end].inode.endDireto[i]].dir.TL && i < QTDE_INODE_DIRETO && disco[end].inode.endDireto[i + 1] == endNulo()) {
                     vet[nivel] = 1; // 1 significa o último diretório!
                     strcat(espaco, "└── ");
                 } else
                     strcat(espaco, "├── ");
                 printf("%s%s\n", espaco, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
                 arvore(disco, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode, nivel + 1, vet);
-            }
+            //}
         }
         i++;
     }
