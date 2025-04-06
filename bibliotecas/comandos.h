@@ -1200,7 +1200,7 @@ char validarCriacaoDir(char *comando, char *nomeDir) {
 }
 
 void visualizarArquivo(Bloco *disco, int endDir, char *comando) {
-    char busca, nomeArquivo[15];
+    char busca, nomeArquivo[15], data[30];
     int i = 3, j = 0, end, pos;
 
     while (i < strlen(comando) && comando[i] != ' ')
@@ -1212,16 +1212,20 @@ void visualizarArquivo(Bloco *disco, int endDir, char *comando) {
         if (busca != -1) {
             if (disco[disco[end].dir.arquivo[pos].endInode].inode.permissao[0] == '-') {
                 if (disco[disco[end].dir.arquivo[pos].endInode].bad != 1 && !corrompido(
-                        disco, disco[disco[end].dir.arquivo[pos].endInode]))
+                        disco, disco[disco[end].dir.arquivo[pos].endInode])) {
                     printf("Arquivo %s visualizado\n", disco[end].dir.arquivo[pos].nome);
-                else
+                    horarioLocal(data);
+                    strcpy(disco[disco[end].dir.arquivo[pos].endInode].inode.ultimoAcesso, data);
+                } else
                     printf("O arquivo %s está corrompido\n", nomeArquivo);
             } else {
                 if (disco[disco[end].dir.arquivo[pos].endInode].inode.permissao[0] == 'l')
                     if (disco[disco[end].dir.arquivo[pos].endInode].bad != 1 && !corrompido(
-                            disco, disco[disco[end].dir.arquivo[pos].endInode]))
+                            disco, disco[disco[end].dir.arquivo[pos].endInode])) {
                         printf("Arquivo %s visualizado\n", disco[end].dir.arquivo[pos].nome);
-                    else
+                        horarioLocal(data);
+                        strcpy(disco[disco[end].dir.arquivo[pos].endInode].inode.ultimoAcesso, data);
+                    } else
                         printf("O arquivo %s está corrompido\n", nomeArquivo);
                 else
                     printf("O arquivo %s é um diretório\n", disco[end].dir.arquivo[pos].nome);
@@ -1552,6 +1556,7 @@ void removerLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, cha
 
 void touch(Bloco *disco, int end, char *usuario, char *nomeArq, int tam) {
     int pos, endArq, tamAnt, diferenca, qtdeBlocos, restoUltBloco, novaQuant;
+    char data[30];
 
     if (buscaArquivo(disco, end, nomeArq, &pos, &endArq) == -1) {
         if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) < qtdeBlocosLivres(disco))
@@ -1560,6 +1565,8 @@ void touch(Bloco *disco, int end, char *usuario, char *nomeArq, int tam) {
             printf("Espaço em disco insuficiente!\n");
     } else {
         if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) < qtdeBlocosLivres(disco)) {
+            horarioLocal(data);
+            strcpy(disco[disco[endArq].dir.arquivo[pos].endInode].inode.ultimaAlteracao, data);
             tamAnt = disco[disco[endArq].dir.arquivo[pos].endInode].inode.tamanho;
             diferenca = tam - tamAnt;
             restoUltBloco = tamAnt % 10;
@@ -1593,7 +1600,7 @@ void mkdir(Bloco *disco, int end, char *usuario, char *nomeDir) {
 
 int navegar(Bloco *disco, int raiz, int endUsuario, int endAtual, char *comando, char *usuario,
             char *caminhoTotal) {
-    char caminho[50], entrada[15] = "", caminhoUsuario[20] = "/home/", caminhoTotalAux[50];
+    char caminho[50], entrada[15] = "", caminhoUsuario[20] = "/home/", caminhoTotalAux[50], data[30];
     int i = 3, j, busca, pos, novoEnd = endAtual, endBusca;
 
     j = 0;
@@ -1700,8 +1707,11 @@ int navegar(Bloco *disco, int raiz, int endUsuario, int endAtual, char *comando,
         printf("Erro: Diretório corrompido\n");
         return novoEnd;
     }
-    if (disco[novoEnd].inode.permissao[0] == 'd')
+    if (disco[novoEnd].inode.permissao[0] == 'd') {
+        horarioLocal(data);
+        strcpy(disco[novoEnd].inode.ultimoAcesso, data);
         return novoEnd;
+    }
     return -1;
 }
 
