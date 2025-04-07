@@ -39,7 +39,7 @@ void execTerminal(Bloco *disco, int endRaiz, int endUsuario, char *usuario, int 
         if (c != -1) {
             endAtual = executarComando(disco, usuario, endRaiz, endUsuario, endAtual, comando, c, tamDisco, caminho);
         } else
-            printf("bash: %s: comando não encontrado\n", comando);
+            printf("bash: %s: comando nao encontrado\n", comando);
     } while (strcmp(comando, "exit") && strcmp(comando, "poweroff"));
 }
 

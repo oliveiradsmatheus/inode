@@ -9,14 +9,14 @@ void limparTela() {
 void mostrarBlocos(Bloco *disco, int tamDisco) {
     int i;
     for (i = 0; i < tamDisco; i++) {
+        if (i != 0 && !(i % 10))
+            printf("\n");
         if (disco[i].bad)
             printf("[%d: B]  ", i);
         else if (blocoLivre(disco, i)) {
             printf("[%d: F]  ", i);
         } else
             printf("[%d: A]  ", i);
-        if (i != 0 && !(i % 9))
-            printf("\n");
     }
     printf("\n");
 }
@@ -34,7 +34,7 @@ void livresOcupadosBytes(Bloco *disco, int tamDisco) {
                     ocupado += 10 + disco[i].inode.tamanho;
         }
     }
-    printf("Espaço livre em disco: %d bytes\tEspaço ocupado: %d bytes\n", tamDisco * 10 - ocupado, ocupado);
+    printf("Espaco livre em disco: %d bytes\tEspaco ocupado: %d bytes\n", tamDisco * 10 - ocupado, ocupado);
 }
 
 void listar(Bloco *disco, int end) {
@@ -113,7 +113,7 @@ void rmdir(Bloco *disco, int endEntrada, char *nomeDir) {
     int end, pos, i = 0, inodeDir;
 
     if (buscaArquivo(disco, endEntrada, nomeDir, &pos, &end) == -1)
-        printf("rmdir: falhou em remover '%s': Diretório inexistente\n", nomeDir);
+        printf("rmdir: falhou em remover '%s': Diretorio inexistente\n", nomeDir);
     else {
         inodeDir = disco[end].dir.arquivo[pos].endInode;
         if (disco[disco[end].dir.arquivo[pos].endInode].inode.permissao[0] == 'd') {
@@ -129,9 +129,9 @@ void rmdir(Bloco *disco, int endEntrada, char *nomeDir) {
                 pushBlocoLivre(disco, disco[inodeDir].inode.endDireto[0]);
                 pushBlocoLivre(disco, inodeDir);
             } else
-                printf("rmdir: falhou em remover '%s': Diretório não vazio\n", nomeDir);
+                printf("rmdir: falhou em remover '%s': Diretorio nao vazio\n", nomeDir);
         } else
-            printf("rmdir: falhou em remover '%s': Não é um diretório\n", nomeDir);
+            printf("rmdir: falhou em remover '%s': Nao e um diretorio\n", nomeDir);
     }
 }
 
@@ -143,7 +143,7 @@ void listarAtributos(Bloco *disco, int end) {
         for (j = 2; j < disco[disco[end].inode.endDireto[i]].dir.TL; j++)
             if (!dirVazio(disco[disco[end].inode.endDireto[i]])) {
                 endInode = disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode;
-                printf("%s\t%d\t%s\t%s\tCriado: %s\t Último acesso: %s\tÚltima alteração: %s\t%s\n",
+                printf("%s\t%d\t%s\t%s\tCriado: %s\t Ultimo acesso: %s\tUltima alteracao: %s\t%s\n",
                        disco[endInode].inode.permissao, disco[endInode].inode.contadorLink,
                        disco[endInode].inode.proprietario, disco[endInode].inode.grupo, disco[endInode].inode.criacao,
                        disco[endInode].inode.ultimoAcesso, disco[endInode].inode.ultimaAlteracao,
@@ -158,7 +158,7 @@ void listarAtributos(Bloco *disco, int end) {
             for (j = 2; j < disco[disco[endSimples].inodeIndireto.endInd[i]].dir.TL; j++)
                 if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[i]])) {
                     endInode = disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode;
-                    printf("%s\t%d\t%s\t%s\tCriado: %s\t Último acesso: %s\tÚltima alteração: %s\t%s\n",
+                    printf("%s\t%d\t%s\t%s\tCriado: %s\t Ultimo acesso: %s\tUltima alteracao: %s\t%s\n",
                            disco[endInode].inode.permissao, disco[endInode].inode.contadorLink,
                            disco[endInode].inode.proprietario, disco[endInode].inode.grupo,
                            disco[endInode].inode.criacao,
@@ -178,7 +178,7 @@ void listarAtributos(Bloco *disco, int end) {
                     for (k = 2; k < disco[disco[endSimples].inodeIndireto.endInd[j]].dir.TL; k++)
                         if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[j]])) {
                             endInode = disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].endInode;
-                            printf("%s\t%d\t%s\t%s\tCriado: %s\t Último acesso: %s\tÚltima alteração: %s\t%s\n",
+                            printf("%s\t%d\t%s\t%s\tCriado: %s\t Ultimo acesso: %s\tUltima alteracao: %s\t%s\n",
                                    disco[endInode].inode.permissao, disco[endInode].inode.contadorLink,
                                    disco[endInode].inode.proprietario, disco[endInode].inode.grupo,
                                    disco[endInode].inode.criacao,
@@ -202,7 +202,7 @@ void listarAtributos(Bloco *disco, int end) {
                             for (l = 2; l < disco[disco[endSimples].inodeIndireto.endInd[k]].dir.TL; l++)
                                 if (!dirVazio(disco[endSimples])) {
                                     endInode = disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].endInode;
-                                    printf("%s\t%d\t%s\t%s\tCriado: %s\t Último acesso: %s\tÚltima alteração: %s\t%s\n",
+                                    printf("%s\t%d\t%s\t%s\tCriado: %s\t Ultimo acesso: %s\tUltima alteracao: %s\t%s\n",
                                            disco[endInode].inode.permissao, disco[endInode].inode.contadorLink,
                                            disco[endInode].inode.proprietario, disco[endInode].inode.grupo,
                                            disco[endInode].inode.criacao,
@@ -225,7 +225,7 @@ void arvore(Bloco *disco, int end, int nivel, int *vet) {
     char espaco[400] = "";
 
     if (disco[disco[end].inode.endDireto[0]].dir.TL == 3)
-        vet[nivel] = 1; // 1 significa o último diretório!
+        vet[nivel] = 1; // 1 significa o último diretorio!
 
     while (i < nivel) {
         if (vet[i] == 0)
@@ -241,7 +241,7 @@ void arvore(Bloco *disco, int end, int nivel, int *vet) {
                 k = nivel * 4 - 4;
                 espaco[k] = '\0';
                 if (j + 1 == disco[disco[end].inode.endDireto[i]].dir.TL && i < QTDE_INODE_DIRETO && disco[end].inode.endDireto[i + 1] == endNulo()) {
-                    vet[nivel] = 1; // 1 significa o último diretório!
+                    vet[nivel] = 1; // 1 significa o último diretorio!
                     strcat(espaco, "└── ");
                 } else
                     strcat(espaco, "├── ");
@@ -378,7 +378,7 @@ void chmod(Bloco *disco, int endDir, char *nomeArq, char *permUsuario, char *tip
         }
         strcpy(disco[disco[endArq].dir.arquivo[pos].endInode].inode.permissao, novaPerm);
     } else
-        printf("Arquivo não encontrado\n");
+        printf("Arquivo nao encontrado\n");
 }
 
 char validarBlocosArquivo(char *comando, char *nomeArq) {
@@ -393,7 +393,7 @@ char validarBlocosArquivo(char *comando, char *nomeArq) {
 }
 
 void listarBlocos(Bloco *disco, int end) {
-    int i, j, k, l, endSimples, endDuplo, endTriplo;
+    int i, j, k, endSimples, endDuplo, endTriplo;
 
     i = 0;
     while (i < QTDE_INODE_DIRETO && disco[end].inode.endDireto[i] != endNulo()) {
@@ -464,7 +464,7 @@ void mostrarBlocosArquivo(Bloco *disco, int endAtual, char *nomeArq) {
         printf("Blocos em uso do arquivo %s\n", nomeArq);
         listarBlocos(disco, disco[endEntrada].dir.arquivo[pos].endInode);
     } else
-        printf("Arquivo %s não encontrado\n");
+        printf("Arquivo %s nao encontrado\n", nomeArq);
 }
 
 char validarUnlink(char *comando, char *nomeArq) {
@@ -636,7 +636,7 @@ int buscaEntradaDiretorio(Bloco *disco, int raiz, int endAtual, char *comando, c
                         busca = buscaArquivo(disco, endBusca, entrada, &pos, &endAtual);
                 }
                 if (busca == -1)
-                    printf("bash: cd: Arquivo ou diretório inexistente\n");
+                    printf("bash: cd: Arquivo ou diretorio inexistente\n");
                 else {
                     novoEnd = disco[endAtual].dir.arquivo[pos].endInode;
                 }
@@ -673,7 +673,7 @@ int buscaEntradaDiretorio(Bloco *disco, int raiz, int endAtual, char *comando, c
                                 busca = buscaArquivo(disco, endBusca, entrada, &pos, &endAtual);
                         }
                         if (busca == -1)
-                            printf("bash: cd: Arquivo ou diretório inexistente\n");
+                            printf("bash: cd: Arquivo ou diretorio inexistente\n");
                         else {
                             novoEnd = disco[endAtual].dir.arquivo[pos].endInode;
                         }
@@ -684,7 +684,7 @@ int buscaEntradaDiretorio(Bloco *disco, int raiz, int endAtual, char *comando, c
     }
     if (bad(disco[novoEnd])) {
         novoEnd = -1;
-        printf("Erro: Diretório corrompido\n");
+        printf("Erro: Diretorio corrompido\n");
         return novoEnd;
     }
     if (disco[novoEnd].inode.permissao[0] == 'd')
@@ -694,7 +694,6 @@ int buscaEntradaDiretorio(Bloco *disco, int raiz, int endAtual, char *comando, c
 
 void listarLinks(Bloco *disco, int end) {
     int i, j, k, l, endSimples, endDuplo, endTriplo;
-    char vazio = 1;
 
     i = 0;
     while (i < QTDE_INODE_DIRETO && disco[end].inode.endDireto[i] != endNulo()) {
@@ -855,7 +854,7 @@ void listarArquivos(Bloco *disco, int end) {
         for (j = 2; j < disco[disco[end].inode.endDireto[i]].dir.TL; j++)
             if (!dirVazio(disco[disco[end].inode.endDireto[i]])) {
                 if (disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].inode.permissao[0] == 'd') {
-                    printf("Diretório: %s - inode [%d]\n",
+                    printf("Diretorio: %s - inode [%d]\n",
                            disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome,
                            disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode
                     );
@@ -877,7 +876,7 @@ void listarArquivos(Bloco *disco, int end) {
                 if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[i]])) {
                     if (disco[disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode].inode.permissao[
                             0] == 'd') {
-                        printf("Diretório: %s - inode [%d]\n",
+                        printf("Diretorio: %s - inode [%d]\n",
                                disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].nome,
                                disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode
                         );
@@ -901,7 +900,7 @@ void listarArquivos(Bloco *disco, int end) {
                         if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[j]])) {
                             if (disco[disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].endInode].inode.
                                 permissao[0] == 'd') {
-                                printf("Diretório: %s - inode [%d]\n",
+                                printf("Diretorio: %s - inode [%d]\n",
                                        disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].nome,
                                        disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].endInode
                                 );
@@ -930,7 +929,7 @@ void listarArquivos(Bloco *disco, int end) {
                                 if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[k]])) {
                                     if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].endInode].
                                         inode.permissao[0] == 'd') {
-                                        printf("Diretório: %s - inode [%d]\n",
+                                        printf("Diretorio: %s - inode [%d]\n",
                                                disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].nome,
                                                disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].endInode
                                         );
@@ -955,7 +954,7 @@ void listarArquivos(Bloco *disco, int end) {
 void visualizarArquivosDir(Bloco *disco, int raiz, int tamDisco) {
     int endAtual = raiz;
 
-    printf("Diretório: raiz - inode[%d]\n", raiz);
+    printf("Diretorio: raiz - inode[%d]\n", raiz);
     while (endAtual < tamDisco) {
         if (disco[endAtual].inode.permissao[0] == 'd' || disco[endAtual].inode.permissao[0] == 'a')
             listarArquivos(disco, endAtual);
@@ -1134,9 +1133,9 @@ void criarLinkFisico(Bloco *disco, int raiz, char *usuario, int endDir, char *or
             pushBlocoLivre(disco, disco[endEntrada].dir.arquivo[pos].endInode);
             disco[endEntrada].dir.arquivo[pos].endInode = inodeOrigem;
         } else
-            printf("ln: falha ao criar link simbólico '%s': Arquivo ou diretório inexistente\n", caminhoDestino);
+            printf("ln: falha ao criar link simbolico '%s': Arquivo ou diretorio inexistente\n", caminhoDestino);
     } else
-        printf("ln: falha ao criar link simbólico '%s': Arquivo ou diretório inexistente\n", caminhoOrigem);
+        printf("ln: falha ao criar link simbolico '%s': Arquivo ou diretorio inexistente\n", caminhoOrigem);
 }
 
 void criarLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, char *origem, char *destino) {
@@ -1173,7 +1172,7 @@ void criarLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, char 
     if (endDestino != -1)
         adicionarEntrada(disco, endDestino, usuario, nomeArquivoDestino, 'l', 1, origem);
     else
-        printf("ln: falha ao criar link simbólico '%s': Arquivo ou diretório inexistente", caminhoDestino);
+        printf("ln: falha ao criar link simbolico '%s': Arquivo ou diretorio inexistente", caminhoDestino);
 }
 
 char validarCriacaoDir(char *comando, char *nomeDir) {
@@ -1208,7 +1207,7 @@ void visualizarArquivo(Bloco *disco, int endDir, char *comando) {
                     horarioLocal(data);
                     strcpy(disco[disco[end].dir.arquivo[pos].endInode].inode.ultimoAcesso, data);
                 } else
-                    printf("O arquivo %s está corrompido\n", nomeArquivo);
+                    printf("O arquivo %s esta corrompido\n", nomeArquivo);
             } else {
                 if (disco[disco[end].dir.arquivo[pos].endInode].inode.permissao[0] == 'l')
                     if (disco[disco[end].dir.arquivo[pos].endInode].bad != 1 && !corrompido(
@@ -1217,14 +1216,14 @@ void visualizarArquivo(Bloco *disco, int endDir, char *comando) {
                         horarioLocal(data);
                         strcpy(disco[disco[end].dir.arquivo[pos].endInode].inode.ultimoAcesso, data);
                     } else
-                        printf("O arquivo %s está corrompido\n", nomeArquivo);
+                        printf("O arquivo %s esta corrompido\n", nomeArquivo);
                 else
-                    printf("O arquivo %s é um diretório\n", disco[end].dir.arquivo[pos].nome);
+                    printf("O arquivo %s e um diretorio\n", disco[end].dir.arquivo[pos].nome);
             }
         } else
-            printf("Arquivo não encontrado\n");
+            printf("Arquivo nao encontrado\n");
     } else
-        printf("Arquivo não encontrado\n");
+        printf("Arquivo nao encontrado\n");
 }
 
 void aumentarBlocos(Bloco *disco, int endInode, int quant) {
@@ -1411,7 +1410,7 @@ void rm(Bloco *disco, int endEntrada, char *nomeArq) {
     int end, pos, i = 0, inodeArq, tam;
 
     if (buscaArquivo(disco, endEntrada, nomeArq, &pos, &end) == -1)
-        printf("rm: falhou em remover '%s': Arquivo ou diretório inexistente\n", nomeArq);
+        printf("rm: falhou em remover '%s': Arquivo ou diretorio inexistente\n", nomeArq);
     else {
         inodeArq = disco[end].dir.arquivo[pos].endInode;
         if (disco[inodeArq].inode.permissao[0] == 'd') {
@@ -1427,7 +1426,7 @@ void rm(Bloco *disco, int endEntrada, char *nomeArq) {
                 pushBlocoLivre(disco, disco[inodeArq].inode.endDireto[0]);
                 pushBlocoLivre(disco, inodeArq);
             } else
-                printf("rm: falhou em remover '%s': Diretório não vazio\n", nomeArq);
+                printf("rm: falhou em remover '%s': Diretorio nao vazio\n", nomeArq);
         } else {
             i = pos;
             while (i < disco[end].dir.TL - 1) {
@@ -1493,7 +1492,7 @@ void removerLinkFisico(Bloco *disco, int raiz, char *usuario, int endDir, char *
             }
         }
     } else
-        printf("ln: falha ao criar link simbólico '%s': Arquivo ou diretório inexistente", caminhoArquivo);
+        printf("ln: falha ao criar link simbolico '%s': Arquivo ou diretorio inexistente", caminhoArquivo);
 }
 
 void removerLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, char *destino) {
@@ -1542,7 +1541,7 @@ void removerLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, cha
             }
         }
     } else
-        printf("ln: falha ao criar link simbólico '%s': Arquivo ou diretório inexistente", caminhoArquivo);
+        printf("ln: falha ao criar link simbolico '%s': Arquivo ou diretorio inexistente", caminhoArquivo);
 }
 
 void touch(Bloco *disco, int end, char *usuario, char *nomeArq, int tam) {
@@ -1553,7 +1552,7 @@ void touch(Bloco *disco, int end, char *usuario, char *nomeArq, int tam) {
         if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) < qtdeBlocosLivres(disco))
             adicionarEntrada(disco, end, usuario, nomeArq, 'a', tam, "");
         else
-            printf("Espaço em disco insuficiente!\n");
+            printf("Espaco em disco insuficiente!\n");
     } else {
         if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) < qtdeBlocosLivres(disco)) {
             horarioLocal(data);
@@ -1573,7 +1572,7 @@ void touch(Bloco *disco, int end, char *usuario, char *nomeArq, int tam) {
                 diminuirBlocos(disco, disco[endArq].dir.arquivo[pos].endInode, diferenca);
             }
         } else
-            printf("Espaço em disco insuficiente!\n");
+            printf("Espaco em disco insuficiente!\n");
     }
 }
 
@@ -1584,9 +1583,9 @@ void mkdir(Bloco *disco, int end, char *usuario, char *nomeDir) {
         if ((float) 1 / (float) 10 < qtdeBlocosLivres(disco))
             adicionarEntrada(disco, end, usuario, nomeDir, 'd', 1, "");
         else
-            printf("Espaço em disco insuficiente!\n");
+            printf("Espaco em disco insuficiente!\n");
     } else
-        printf("mkdir: não foi possível criar o diretório “%s”: Arquivo existe\n", nomeDir);
+        printf("mkdir: nao foi possível criar o diretorio “%s”: Arquivo existe\n", nomeDir);
 }
 
 int navegar(Bloco *disco, int raiz, int endUsuario, int endAtual, char *comando, char *usuario,
@@ -1634,7 +1633,7 @@ int navegar(Bloco *disco, int raiz, int endUsuario, int endAtual, char *comando,
                         busca = buscaArquivo(disco, endBusca, entrada, &pos, &endAtual);
                 }
                 if (busca == -1)
-                    printf("bash: cd: Arquivo ou diretório inexistente\n");
+                    printf("bash: cd: Arquivo ou diretorio inexistente\n");
                 else {
                     novoEnd = disco[endAtual].dir.arquivo[pos].endInode;
                     strcpy(caminhoTotal, caminhoTotalAux);
@@ -1679,7 +1678,7 @@ int navegar(Bloco *disco, int raiz, int endUsuario, int endAtual, char *comando,
                                 busca = buscaArquivo(disco, endBusca, entrada, &pos, &endAtual);
                         }
                         if (busca == -1)
-                            printf("bash: cd: Arquivo ou diretório inexistente\n");
+                            printf("bash: cd: Arquivo ou diretorio inexistente\n");
                         else {
                             novoEnd = disco[endAtual].dir.arquivo[pos].endInode;
                             strcpy(caminhoTotal, caminhoTotalAux);
@@ -1695,7 +1694,7 @@ int navegar(Bloco *disco, int raiz, int endUsuario, int endAtual, char *comando,
     if (bad(disco[novoEnd])) {
         novoEnd = endUsuario;
         strcpy(caminhoTotal, caminhoUsuario);
-        printf("Erro: Diretório corrompido\n");
+        printf("Erro: Diretorio corrompido\n");
         return novoEnd;
     }
     if (disco[novoEnd].inode.permissao[0] == 'd') {
@@ -1790,7 +1789,7 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
                 else
                     printf("Nome de arquivo muito longo\n");
             else
-                printf("Opção não existente para o comando mkdir\n");
+                printf("Opcao nao existente para o comando mkdir\n");
             break;
         case 2:
             if (validarRemocao(comando, nomeArq))
@@ -1803,7 +1802,7 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
         case 4:
             endAtual = navegar(disco, raiz, endUsuario, endAtual, comando, usuario, caminho);
             if (endAtual == -1) {
-                printf("bash: cd: %s: Não é um diretório\n", caminho);
+                printf("bash: cd: %s: Nao e um diretorio\n", caminho);
                 endAtual = end;
                 i = strlen(caminho);
                 while (caminho[i] != '/')
@@ -1814,7 +1813,7 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
         case 5:
             tipoLink = linkValido(comando, origem, destino);
             if (tipoLink == -1)
-                printf("Não foi possível criar o link '%s' para '%s': Arquivo ou diretório inexistente\n", origem,
+                printf("Nao foi possível criar o link '%s' para '%s': Arquivo ou diretorio inexistente\n", origem,
                        destino);
             else {
                 if (tipoLink == 1)
@@ -1829,7 +1828,7 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
         case 7:
             tipoLink = validarUnlink(comando, nomeArq);
             if (tipoLink == -1)
-                printf("Não foi possível remover o link '%s' para '%s': Arquivo ou diretório inexistente\n", origem,
+                printf("Nao foi possível remover o link '%s' para '%s': Arquivo ou diretorio inexistente\n", origem,
                        destino);
             else if (tipoLink == 1)
                 removerLinkSimbolico(disco, raiz, usuario, end, nomeArq);
@@ -1846,7 +1845,7 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
                 else
                     printf("Nome de arquivo muito longo\n");
             else
-                printf("Opção não existente para o comando touch\n");
+                printf("Opcao nao existente para o comando touch\n");
             break;
         case 9:
             if (!strcmp(comando, "df"))
@@ -1856,7 +1855,7 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
             if (!strcmp(comando, "clear"))
                 limparTela();
             else
-                printf("Opção não existente para o comando clear\n");
+                printf("Opcao nao existente para o comando clear\n");
             break;
         case 11:
             if (validarAlteracaoPermissao(comando, usuarioPerm, tipoPerm, nomeArq)) {
@@ -1871,7 +1870,7 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
             if (!strcmp(comando, "pwd"))
                 printf("%s\n", caminho);
             else
-                printf("Opção não existente para o comando pwd\n");
+                printf("Opcao nao existente para o comando pwd\n");
             break;
         case 14:
             if (!strcmp(comando, "tree")) {
