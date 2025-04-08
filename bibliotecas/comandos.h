@@ -1622,6 +1622,64 @@ void removerLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, cha
         printf("ln: falha ao criar link simbolico '%s': Arquivo ou diretorio inexistente", caminhoArquivo);
 }
 
+int maiorArquivoPossivel(Bloco *disco) {
+    int qtdeBlocos, cont = 0, i = 0, j, k;
+
+    qtdeBlocos = qtdeBlocosLivres(disco);
+    while (qtdeBlocos > 0) {
+        i = 0;
+        qtdeBlocos--; // i-node
+        while (qtdeBlocos > 0 && i < 5) {
+            i++;
+            qtdeBlocos--;
+            cont++;
+        }
+        if (qtdeBlocos > 0) {
+            qtdeBlocos--; // i-node indireto simples
+            i = 0;
+            while (qtdeBlocos > 0 && i < 5) {
+                i++;
+                qtdeBlocos--;
+                cont++;
+            }
+        }
+        if (qtdeBlocos > 0) {
+            i = 0;
+            qtdeBlocos--; // i-node indireto duplo
+            while (qtdeBlocos > 0 && i < 5) {
+                j = 0;
+                qtdeBlocos--; // i-node indireto simples
+                while (qtdeBlocos > 0 && j < 5) {
+                    j++;
+                    qtdeBlocos--;
+                    cont++;
+                }
+                i++;
+            }
+        }
+        if (qtdeBlocos > 0) {
+            i = 0;
+            qtdeBlocos--; // i-node indireto duplo
+            while (qtdeBlocos > 0 && i < 5) {
+                j = 0;
+                qtdeBlocos--; // i-node indireto simples
+                while (qtdeBlocos > 0 && j < 5) {
+                    k = 0;
+                    qtdeBlocos--;
+                    while (qtdeBlocos > 0 && k < 5) {
+                        qtdeBlocos--;
+                        cont++;
+                        k++;
+                    }
+                    j++;
+                }
+                i++;
+            }
+        }
+    }
+    return cont;
+}
+
 void touch(Bloco *disco, int end, int raiz, char *usuario, char *nomeArq, int tam) {
     int pos, endArq, tamAnt, diferenca, qtdeBlocos, restoUltBloco, novaQuant, i, j = 0, k, endDestino;
     char data[30], caminhoDestino[50], aux[20], nomeArquivoDestino[15];
@@ -1652,10 +1710,8 @@ void touch(Bloco *disco, int end, int raiz, char *usuario, char *nomeArq, int ta
         strcpy(nomeArquivoDestino, nomeArq);
 
     endDestino = buscaEntradaDiretorio(disco, raiz, end, nomeArq, usuario);
-
-    //adicionarEntrada(disco, endDestino, usuario, nomeArquivoDestino, 'l', 1, "");
     if (endDestino != -1)
-        if (buscaArquivo(disco, end, nomeArq, &pos, &endArq) == -1) {
+        if (buscaArquivo(disco, end, nomeArquivoDestino, &pos, &endArq) == -1) {
             if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) < qtdeBlocosLivres(disco))
                 adicionarEntrada(disco, endDestino, usuario, nomeArquivoDestino, 'a', tam, "");
             else
@@ -1862,7 +1918,7 @@ char eComando(char *comando) {
         c = 15;
     else if (!strcmp(comandoPrincipal, "stack"))
         c = 16;
-    else if (!strcmp(comandoPrincipal, "maior"))
+    else if (!strcmp(comandoPrincipal, "maior") || !strcmp(comandoPrincipal, "maiorp"))
         c = 17;
     else if (!strcmp(comandoPrincipal, "status"))
         c = 18;
@@ -1996,6 +2052,10 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
         case 17:
             if (!strcmp(comando, "maior"))
                 printf("O maior arquivo possui %d blocos\n", maior(disco, raiz, tamDisco));
+            else if (!strcmp(comando, "maiorp")) {
+                tam = maiorArquivoPossivel(disco);
+                printf("Maior arquivo possível: %d blocos (%d bytes)\n", tam, tam * 10);
+            }
             break;
         case 18:
             if (!strcmp(comando, "status"))
