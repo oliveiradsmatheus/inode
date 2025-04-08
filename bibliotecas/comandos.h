@@ -93,11 +93,18 @@ void listar(Bloco *disco, int end) {
                         k = 0;
                         endSimples = disco[endDuplo].inodeIndireto.endInd[j];
                         while (k < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[k] != endNulo()) {
-                            for (l = 2; l < disco[disco[endSimples].inodeIndireto.endInd[k]].dir.TL; l++)
-                                if (!dirVazio(disco[endSimples]))
-                                    printf("%s     ",
-                                           disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].nome);
-                            printf("\n");
+                            if (i == QTDE_INODE_INDIRETO - 1 && j == QTDE_INODE_INDIRETO - 1 && k == QTDE_INODE_INDIRETO
+                                - 1)
+                                if (disco[disco[endSimples].inodeIndireto.endInd[k]].inode.permissao[0] != '\0')
+                                    listar(disco, disco[endSimples].inodeIndireto.endInd[k]);
+                                else {
+                                    for (l = 2; l < disco[disco[endSimples].inodeIndireto.endInd[k]].dir.TL; l++)
+                                        if (!dirVazio(disco[endSimples]))
+                                            printf("%s     ",
+                                                   disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                   nome);
+                                    printf("\n");
+                                }
                             k++;
                         }
                         j++;
@@ -199,16 +206,24 @@ void listarAtributos(Bloco *disco, int end) {
                         k = 0;
                         endSimples = disco[endDuplo].inodeIndireto.endInd[j];
                         while (k < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[k] != endNulo()) {
-                            for (l = 2; l < disco[disco[endSimples].inodeIndireto.endInd[k]].dir.TL; l++)
-                                if (!dirVazio(disco[endSimples])) {
-                                    endInode = disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].endInode;
-                                    printf("%s\t%d\t%s\t%s\tCriado: %s\t Ultimo acesso: %s\tUltima alteracao: %s\t%s\n",
-                                           disco[endInode].inode.permissao, disco[endInode].inode.contadorLink,
-                                           disco[endInode].inode.proprietario, disco[endInode].inode.grupo,
-                                           disco[endInode].inode.criacao,
-                                           disco[endInode].inode.ultimoAcesso, disco[endInode].inode.ultimaAlteracao,
-                                           disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].nome);
-                                }
+                            if (i == QTDE_INODE_INDIRETO - 1 && j == QTDE_INODE_INDIRETO - 1 && k == QTDE_INODE_INDIRETO
+                                - 1)
+                                if (disco[disco[endSimples].inodeIndireto.endInd[k]].inode.permissao[0] != '\0')
+                                    listarAtributos(disco, disco[endSimples].inodeIndireto.endInd[k]);
+                                else
+                                    for (l = 2; l < disco[disco[endSimples].inodeIndireto.endInd[k]].dir.TL; l++)
+                                        if (!dirVazio(disco[endSimples])) {
+                                            endInode = disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                    endInode;
+                                            printf(
+                                                "%s\t%d\t%s\t%s\tCriado: %s\t Ultimo acesso: %s\tUltima alteracao: %s\t%s\n",
+                                                disco[endInode].inode.permissao, disco[endInode].inode.contadorLink,
+                                                disco[endInode].inode.proprietario, disco[endInode].inode.grupo,
+                                                disco[endInode].inode.criacao,
+                                                disco[endInode].inode.ultimoAcesso,
+                                                disco[endInode].inode.ultimaAlteracao,
+                                                disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].nome);
+                                        }
                             k++;
                         }
                         j++;
@@ -238,15 +253,16 @@ void arvore(Bloco *disco, int end, int nivel, int *vet) {
     while (i < QTDE_INODE_DIRETO && disco[end].inode.endDireto[i] != endNulo()) {
         for (j = 2; j < disco[disco[end].inode.endDireto[i]].dir.TL; j++) {
             //if (disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].inode.permissao[0] == 'd') {
-                k = nivel * 4 - 4;
-                espaco[k] = '\0';
-                if (j + 1 == disco[disco[end].inode.endDireto[i]].dir.TL && i < QTDE_INODE_DIRETO && disco[end].inode.endDireto[i + 1] == endNulo()) {
-                    vet[nivel] = 1; // 1 significa o último diretorio!
-                    strcat(espaco, "└── ");
-                } else
-                    strcat(espaco, "├── ");
-                printf("%s%s\n", espaco, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
-                arvore(disco, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode, nivel + 1, vet);
+            k = nivel * 4 - 4;
+            espaco[k] = '\0';
+            if (j + 1 == disco[disco[end].inode.endDireto[i]].dir.TL && i < QTDE_INODE_DIRETO && disco[end].inode.
+                endDireto[i + 1] == endNulo()) {
+                vet[nivel] = 1; // 1 significa o último diretorio!
+                strcat(espaco, "└── ");
+            } else
+                strcat(espaco, "├── ");
+            printf("%s%s\n", espaco, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
+            arvore(disco, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode, nivel + 1, vet);
             //}
         }
         i++;
@@ -441,11 +457,17 @@ void listarBlocos(Bloco *disco, int end) {
                         k = 0;
                         endSimples = disco[endDuplo].inodeIndireto.endInd[j];
                         while (k < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[k] != endNulo()) {
-                            printf("[%d] ", disco[endSimples].inodeIndireto.endInd[k]);
-                            if (disco[disco[endSimples].inodeIndireto.endInd[k]].bad)
-                                printf("- Bad\n");
-                            else
-                                printf("- Ok\n");
+                            if (i == QTDE_INODE_INDIRETO - 1 && j == QTDE_INODE_INDIRETO - 1 && k == QTDE_INODE_INDIRETO
+                                - 1)
+                                if (disco[disco[endSimples].inodeIndireto.endInd[k]].inode.permissao[0] != '\0')
+                                    listarBlocos(disco, disco[endSimples].inodeIndireto.endInd[k]);
+                                else {
+                                    printf("[%d] ", disco[endSimples].inodeIndireto.endInd[k]);
+                                    if (disco[disco[endSimples].inodeIndireto.endInd[k]].bad)
+                                        printf("- Bad\n");
+                                    else
+                                        printf("- Ok\n");
+                                }
                             k++;
                         }
                         j++;
@@ -796,35 +818,49 @@ void listarLinks(Bloco *disco, int end) {
                         k = 0;
                         endSimples = disco[endDuplo].inodeIndireto.endInd[j];
                         while (k < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[k] != endNulo()) {
-                            for (l = 2; l < disco[disco[endSimples].inodeIndireto.endInd[k]].dir.TL; l++)
-                                if (!dirVazio(disco[endSimples])) {
-                                    if (disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].inode.
-                                        permissao[0]
-                                        == 'l') {
-                                        printf("%s - 'link -s' - inode [%d] - bloco [%d] - caminho: %s\n",
-                                               disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].nome,
-                                               disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].endInode,
-                                               disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
-                                                   endInode].
-                                               inode.endDireto[i],
-                                               disco[disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[
-                                                           l].
-                                                       endInode].inode.endDireto
-                                                   [0]].softLink.caminho
-                                        );
-                                    } else if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
-                                                   endInode].
-                                               inode.contadorLink >
-                                               1) {
-                                        printf("%s - 'link -h' - inode [%d] - contador: %d\n",
-                                               disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].nome,
-                                               disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].endInode,
-                                               disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
-                                                   endInode].
-                                               inode.contadorLink
-                                        );
-                                    }
-                                }
+                            if (i == QTDE_INODE_INDIRETO - 1 && j == QTDE_INODE_INDIRETO - 1 && k == QTDE_INODE_INDIRETO
+                                - 1)
+                                if (disco[disco[endSimples].inodeIndireto.endInd[k]].inode.permissao[0] != '\0')
+                                    listarLinks(disco, disco[endSimples].inodeIndireto.endInd[k]);
+                                else
+                                    for (l = 2; l < disco[disco[endSimples].inodeIndireto.endInd[k]].dir.TL; l++)
+                                        if (!dirVazio(disco[endSimples])) {
+                                            if (disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].
+                                                inode.
+                                                permissao[0]
+                                                == 'l') {
+                                                printf("%s - 'link -s' - inode [%d] - bloco [%d] - caminho: %s\n",
+                                                       disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                       nome,
+                                                       disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                       endInode,
+                                                       disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.
+                                                           arquivo[l].
+                                                           endInode].
+                                                       inode.endDireto[i],
+                                                       disco[disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.
+                                                               arquivo[
+                                                                   l].
+                                                               endInode].inode.endDireto
+                                                           [0]].softLink.caminho
+                                                );
+                                            } else if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.
+                                                           arquivo[l].
+                                                           endInode].
+                                                       inode.contadorLink >
+                                                       1) {
+                                                printf("%s - 'link -h' - inode [%d] - contador: %d\n",
+                                                       disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                       nome,
+                                                       disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                       endInode,
+                                                       disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.
+                                                           arquivo[l].
+                                                           endInode].
+                                                       inode.contadorLink
+                                                );
+                                            }
+                                        }
                             k++;
                         }
                         j++;
@@ -925,21 +961,31 @@ void listarArquivos(Bloco *disco, int end) {
                         k = 0;
                         endSimples = disco[endDuplo].inodeIndireto.endInd[j];
                         while (k < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[k] != endNulo()) {
-                            for (l = 2; l < disco[disco[endSimples].inodeIndireto.endInd[k]].dir.TL; l++)
-                                if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[k]])) {
-                                    if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].endInode].
-                                        inode.permissao[0] == 'd') {
-                                        printf("Diretorio: %s - inode [%d]\n",
-                                               disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].nome,
-                                               disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].endInode
-                                        );
-                                    } else {
-                                        printf("Arquivo: %s - inode [%d]\n",
-                                               disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].nome,
-                                               disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].endInode
-                                        );
-                                    }
-                                }
+                            if (i == QTDE_INODE_INDIRETO - 1 && j == QTDE_INODE_INDIRETO - 1 && k == QTDE_INODE_INDIRETO
+                                - 1)
+                                if (disco[disco[endSimples].inodeIndireto.endInd[k]].inode.permissao[0] != '\0')
+                                    listar(disco, disco[endSimples].inodeIndireto.endInd[k]);
+                                else
+                                    for (l = 2; l < disco[disco[endSimples].inodeIndireto.endInd[k]].dir.TL; l++)
+                                        if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[k]])) {
+                                            if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                    endInode].
+                                                inode.permissao[0] == 'd') {
+                                                printf("Diretorio: %s - inode [%d]\n",
+                                                       disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                       nome,
+                                                       disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                       endInode
+                                                );
+                                            } else {
+                                                printf("Arquivo: %s - inode [%d]\n",
+                                                       disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                       nome,
+                                                       disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                       endInode
+                                                );
+                                            }
+                                        }
                             k++;
                         }
                         j++;
@@ -1037,10 +1083,16 @@ void contarBlocosPerdidos(Bloco *disco, int end, int *cont) {
                         if (bad)
                             (*cont)++;
                         while (k < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[k] != endNulo()) {
-                            if (disco[disco[endSimples].inodeIndireto.endInd[k]].bad == 1)
-                                bad = 1;
-                            if (bad)
-                                (*cont)++;
+                            if (i == QTDE_INODE_INDIRETO - 1 && j == QTDE_INODE_INDIRETO - 1 && k == QTDE_INODE_INDIRETO
+                                - 1)
+                                if (disco[disco[endSimples].inodeIndireto.endInd[k]].inode.permissao[0] != '\0')
+                                    contarBlocosPerdidos(disco, disco[endSimples].inodeIndireto.endInd[k], &*cont);
+                                else {
+                                    if (disco[disco[endSimples].inodeIndireto.endInd[k]].bad == 1)
+                                        bad = 1;
+                                    if (bad)
+                                        (*cont)++;
+                                }
                             k++;
                         }
                         j++;
@@ -1285,10 +1337,20 @@ void aumentarBlocos(Bloco *disco, int endInode, int quant) {
                         while (k < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[k] !=
                                endNulo())
                             k++;
-                        while (k < QTDE_INODE_INDIRETO && quant > 0) {
-                            disco[endSimples].inodeIndireto.endInd[k++] = popBlocoLivre(disco);
-                            disco[endSimples].inodeIndireto.TL++;
-                            quant--;
+                        if (i == QTDE_INODE_INDIRETO - 1 && j == QTDE_INODE_INDIRETO - 1 && k == QTDE_INODE_INDIRETO) {
+                            if (disco[endSimples].inodeIndireto.endInd[k - 1] != endNulo()) {
+                                pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[k - 1]);
+                                disco[endSimples].inodeIndireto.endInd[k - 1] = criarInode(
+                                    disco, disco[endInode].inode.proprietario,
+                                    'a', 1, 1, "");
+                                aumentarBlocos(disco, disco[endSimples].inodeIndireto.endInd[k - 1], quant + 1);
+                            }
+                        } else {
+                            while (k < QTDE_INODE_INDIRETO && quant > 0) {
+                                disco[endSimples].inodeIndireto.endInd[k++] = popBlocoLivre(disco);
+                                disco[endSimples].inodeIndireto.TL++;
+                                quant--;
+                            }
                         }
                         j++;
                     }
@@ -1299,28 +1361,39 @@ void aumentarBlocos(Bloco *disco, int endInode, int quant) {
     }
 }
 
-void diminuirBlocos(Bloco *disco, int endInode, int quant) {
+void diminuirBlocos(Bloco *disco, int endInode, int *quant) {
     int i, j, k, endSimples, endDuplo, endTriplo;
 
     i = QTDE_INODE_INDIRETO - 1;
     endTriplo = disco[endInode].inode.endTriploIndireto;
+    if (disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]) {
+        diminuirBlocos(
+            disco,
+            disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4],
+            &*quant);
+        pushBlocoLivre(
+            disco,
+            disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]);
+        disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4] =
+                popBlocoLivre(disco);
+    }
     if (endTriplo != endNulo()) {
-        while (i >= 0 && quant > 0) {
+        while (i >= 0 && *quant > 0) {
             j = QTDE_INODE_INDIRETO - 1;
             if (disco[endTriplo].inodeIndireto.endInd[i] != endNulo()) {
                 endDuplo = disco[endTriplo].inodeIndireto.endInd[i];
-                while (j >= 0 && quant > 0) {
+                while (j >= 0 && *quant > 0) {
                     k = QTDE_INODE_INDIRETO - 1;
                     if (disco[endDuplo].inodeIndireto.endInd[j] != endNulo()) {
                         endSimples = disco[endDuplo].inodeIndireto.endInd[j];
                         if (disco[endSimples].inodeIndireto.endInd[k] != endNulo()) {
                             while (k != 0 && disco[endSimples].inodeIndireto.endInd[k] == endNulo())
                                 k++;
-                            while (k >= 0 && quant > 0) {
+                            while (k >= 0 && *quant > 0) {
                                 pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[k]);
                                 disco[endSimples].inodeIndireto.endInd[k--] = -1;
                                 disco[endSimples].inodeIndireto.TL--;
-                                quant--;
+                                (*quant)--;
                             }
                         }
                         if (disco[endSimples].inodeIndireto.TL == 0) {
@@ -1344,22 +1417,22 @@ void diminuirBlocos(Bloco *disco, int endInode, int quant) {
             disco[endInode].inode.endTriploIndireto = -1;
         }
     }
-    if (quant > 0) {
+    if (*quant > 0) {
         i = QTDE_INODE_INDIRETO - 1;
         endDuplo = disco[endInode].inode.endDuploIndireto;
         if (endDuplo != endNulo()) {
-            while (i >= 0 && quant > 0) {
+            while (i >= 0 && *quant > 0) {
                 j = QTDE_INODE_INDIRETO - 1;
                 if (disco[endDuplo].inodeIndireto.endInd[i] != endNulo()) {
                     endSimples = disco[endDuplo].inodeIndireto.endInd[i];
                     if (disco[endSimples].inodeIndireto.endInd[j] != endNulo()) {
                         while (j != 0 && disco[endSimples].inodeIndireto.endInd[j] == endNulo())
                             j++;
-                        while (j >= 0 && quant > 0) {
+                        while (j >= 0 && *quant > 0) {
                             pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[j]);
                             disco[endSimples].inodeIndireto.endInd[j--] = -1;
                             disco[endSimples].inodeIndireto.TL--;
-                            quant--;
+                            (*quant)--;
                         }
                     }
                     if (disco[endSimples].inodeIndireto.TL == 0) {
@@ -1375,31 +1448,31 @@ void diminuirBlocos(Bloco *disco, int endInode, int quant) {
                 disco[endInode].inode.endDuploIndireto = -1;
             }
         }
-        if (quant > 0) {
+        if (*quant > 0) {
             i = QTDE_INODE_INDIRETO - 1;
             endSimples = disco[endInode].inode.endSimplesIndireto;
             if (endSimples != endNulo()) {
                 while (i != 0 && disco[endSimples].inodeIndireto.endInd[i] == endNulo())
                     i--;
-                while (i >= 0 && quant > 0) {
+                while (i >= 0 && *quant > 0) {
                     pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[i]);
                     disco[endSimples].inodeIndireto.endInd[i--] = -1;
                     disco[endSimples].inodeIndireto.TL--;
-                    quant--;
+                    (*quant)--;
                 }
                 if (disco[endSimples].inodeIndireto.TL == 0) {
                     pushBlocoLivre(disco, disco[endInode].inode.endSimplesIndireto);
                     disco[endInode].inode.endSimplesIndireto = -1;
                 }
             }
-            if (quant > 0) {
+            if (*quant > 0) {
                 i = QTDE_INODE_DIRETO - 1;
                 while (i != 0 && disco[endInode].inode.endDireto[i] == endNulo())
                     i--;
                 while (i >= 0 && quant > 0) {
                     pushBlocoLivre(disco, disco[endInode].inode.endDireto[i]);
                     disco[endInode].inode.endDireto[i--] = -1;
-                    quant--;
+                    (*quant)--;
                 }
             }
         }
@@ -1435,11 +1508,16 @@ void rm(Bloco *disco, int endEntrada, char *nomeArq) {
                 i++;
             }
             disco[end].dir.TL--;
-            disco[disco[end].dir.arquivo[i].endInode].inode.contadorLink--;
-            if (disco[disco[end].dir.arquivo[i].endInode].inode.contadorLink == 0) {
-                tam = (int) (ceil)((float) disco[inodeArq].inode.tamanho / (float) 10);
-                diminuirBlocos(disco, inodeArq, tam);
+            if (disco[inodeArq].inode.permissao[0] == 'l') {
+                pushBlocoLivre(disco, disco[inodeArq].inode.endDireto[0]);
                 pushBlocoLivre(disco, inodeArq);
+            } else {
+                disco[disco[end].dir.arquivo[i].endInode].inode.contadorLink--;
+                if (disco[disco[end].dir.arquivo[i].endInode].inode.contadorLink == 0) {
+                    tam = (int) (ceil)((float) disco[inodeArq].inode.tamanho / (float) 10);
+                    diminuirBlocos(disco, inodeArq, &tam);
+                    pushBlocoLivre(disco, inodeArq);
+                }
             }
         }
     }
@@ -1496,7 +1574,7 @@ void removerLinkFisico(Bloco *disco, int raiz, char *usuario, int endDir, char *
 }
 
 void removerLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, char *destino) {
-    int i = 0, j = 0, k, endDestino, pos, endEntrada, inode;
+    int i = 0, j = 0, k, endDestino, pos, endEntrada, inode, tam = 1;
     char caminhoArquivo[50], aux[50], nomeArquivo[15];
 
     strcpy(caminhoArquivo, destino);
@@ -1536,7 +1614,7 @@ void removerLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, cha
                     i++;
                 }
                 disco[endEntrada].dir.TL--;
-                diminuirBlocos(disco, inode, 1);
+                diminuirBlocos(disco, inode, &tam);
                 pushBlocoLivre(disco, inode);
             }
         }
@@ -1544,36 +1622,65 @@ void removerLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, cha
         printf("ln: falha ao criar link simbolico '%s': Arquivo ou diretorio inexistente", caminhoArquivo);
 }
 
-void touch(Bloco *disco, int end, char *usuario, char *nomeArq, int tam) {
-    int pos, endArq, tamAnt, diferenca, qtdeBlocos, restoUltBloco, novaQuant;
-    char data[30];
+void touch(Bloco *disco, int end, int raiz, char *usuario, char *nomeArq, int tam) {
+    int pos, endArq, tamAnt, diferenca, qtdeBlocos, restoUltBloco, novaQuant, i, j = 0, k, endDestino;
+    char data[30], caminhoDestino[50], aux[20], nomeArquivoDestino[15];
 
-    if (buscaArquivo(disco, end, nomeArq, &pos, &endArq) == -1) {
-        if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) < qtdeBlocosLivres(disco))
-            adicionarEntrada(disco, end, usuario, nomeArq, 'a', tam, "");
-        else
-            printf("Espaco em disco insuficiente!\n");
-    } else {
-        if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) < qtdeBlocosLivres(disco)) {
-            horarioLocal(data);
-            strcpy(disco[disco[endArq].dir.arquivo[pos].endInode].inode.ultimaAlteracao, data);
-            tamAnt = disco[disco[endArq].dir.arquivo[pos].endInode].inode.tamanho;
-            diferenca = tam - tamAnt;
-            restoUltBloco = tamAnt % 10;
-            disco[disco[endArq].dir.arquivo[pos].endInode].inode.tamanho = tam;
-            if (diferenca > 0) {
-                qtdeBlocos = ceil((((float) tam - (float) tamAnt) + (float) restoUltBloco) / 10);
-                if (qtdeBlocosNecessarios(qtdeBlocos) < qtdeBlocosLivres(disco))
-                    aumentarBlocos(disco, disco[endArq].dir.arquivo[pos].endInode, qtdeBlocos);
-            } else {
-                qtdeBlocos = ceil((float) tamAnt / 10);
-                novaQuant = ceil((float) tam / 10);
-                diferenca = qtdeBlocos - novaQuant;
-                diminuirBlocos(disco, disco[endArq].dir.arquivo[pos].endInode, diferenca);
-            }
-        } else
-            printf("Espaco em disco insuficiente!\n");
+    strcpy(caminhoDestino, nomeArq);
+    aux[0] = '\0';
+    if (nomeArq[0] != '/' && nomeArq[0] != '.') {
+        strcat(aux, "./");
+        strcat(aux, nomeArq);
+        strcpy(nomeArq, aux);
     }
+    if (nomeArq[0] == '/' || nomeArq[0] == '.') {
+        i = strlen(nomeArq) - 1;
+        while (i >= 0 && nomeArq[i] != '/')
+            i--;
+        k = i;
+        i++;
+        while (i < strlen(nomeArq))
+            nomeArquivoDestino[j++] = nomeArq[i++];
+        nomeArquivoDestino[j] = '\0';
+        if (k != 1)
+            nomeArq[k] = '\0';
+        else
+            nomeArq[k + 1] = '\0';
+        if (nomeArq[0] == '\0')
+            strcpy(nomeArq, "/");
+    } else
+        strcpy(nomeArquivoDestino, nomeArq);
+
+    endDestino = buscaEntradaDiretorio(disco, raiz, end, nomeArq, usuario);
+
+    //adicionarEntrada(disco, endDestino, usuario, nomeArquivoDestino, 'l', 1, "");
+    if (endDestino != -1)
+        if (buscaArquivo(disco, end, nomeArq, &pos, &endArq) == -1) {
+            if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) < qtdeBlocosLivres(disco))
+                adicionarEntrada(disco, endDestino, usuario, nomeArquivoDestino, 'a', tam, "");
+            else
+                printf("Espaco em disco insuficiente!\n");
+        } else {
+            if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) < qtdeBlocosLivres(disco)) {
+                horarioLocal(data);
+                strcpy(disco[disco[endArq].dir.arquivo[pos].endInode].inode.ultimaAlteracao, data);
+                tamAnt = disco[disco[endArq].dir.arquivo[pos].endInode].inode.tamanho;
+                diferenca = tam - tamAnt;
+                restoUltBloco = tamAnt % 10;
+                disco[disco[endArq].dir.arquivo[pos].endInode].inode.tamanho = tam;
+                if (diferenca > 0) {
+                    qtdeBlocos = ceil((((float) tam - (float) tamAnt) + (float) restoUltBloco) / 10);
+                    if (qtdeBlocosNecessarios(qtdeBlocos) < qtdeBlocosLivres(disco))
+                        aumentarBlocos(disco, disco[endArq].dir.arquivo[pos].endInode, qtdeBlocos);
+                } else {
+                    qtdeBlocos = ceil((float) tamAnt / 10);
+                    novaQuant = ceil((float) tam / 10);
+                    diferenca = qtdeBlocos - novaQuant;
+                    diminuirBlocos(disco, disco[endArq].dir.arquivo[pos].endInode, &diferenca);
+                }
+            } else
+                printf("Espaco em disco insuficiente!\n");
+        }
 }
 
 void mkdir(Bloco *disco, int end, char *usuario, char *nomeDir) {
@@ -1773,7 +1880,7 @@ char eComando(char *comando) {
 int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int end, char *comando, char c, int tamDisco,
                     char *caminho) {
     int i = 0, tam, endAtual = end, vet[30], blocosPerdidos;
-    char nomeArq[TAM_MAX_NOME], origem[50], destino[50], tipoPerm[4], usuarioPerm[4], tipo, tipoLink;
+    char nomeArq[50], origem[50], destino[50], tipoPerm[4], usuarioPerm[4], tipo, tipoLink;
 
     switch (c) {
         case 0:
@@ -1837,11 +1944,8 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
             break;
         case 8:
             if (validarCriacaoArq(comando, nomeArq, &tam))
-                if (strlen(nomeArq) <= 14)
-                    if (tam <= 1600)
-                        touch(disco, end, usuario, nomeArq, tam);
-                    else
-                        printf("Tamanho do arquivo muito grande\n");
+                if (strlen(nomeArq) <= 49)
+                    touch(disco, end, raiz, usuario, nomeArq, tam);
                 else
                     printf("Nome de arquivo muito longo\n");
             else

@@ -177,47 +177,63 @@ char bad(Bloco bloco) {
 }
 
 char corrompido(Bloco *disco, Bloco blocoInode) {
-    char corrompido = 0;
+    char corr = 0;
     int i, j, k, indSimples, indDuplo, indTriplo;
 
-    for (i = 0; i < QTDE_INODE_DIRETO && blocoInode.inode.endDireto[i] != endNulo() && !corrompido; i++)
+    for (i = 0; i < QTDE_INODE_DIRETO && blocoInode.inode.endDireto[i] != endNulo() && !corr; i++)
         if (bad(disco[blocoInode.inode.endDireto[i]]))
-            corrompido = 1;
+            corr = 1;
 
     indSimples = blocoInode.inode.endSimplesIndireto;
+    if (disco[indSimples].bad == 1)
+        corr = 1;
     if (indSimples != endNulo()) {
-        for (i = 0; i < QTDE_INODE_INDIRETO && disco[indSimples].inodeIndireto.endInd[i] != endNulo() && !corrompido; i
+        for (i = 0; i < QTDE_INODE_INDIRETO && disco[indSimples].inodeIndireto.endInd[i] != endNulo() && !corr; i
              ++)
             if (bad(disco[disco[indSimples].inodeIndireto.endInd[i]]))
-                corrompido = 1;
+                corr = 1;
 
         indDuplo = blocoInode.inode.endDuploIndireto;
+        if (disco[indDuplo].bad == 1)
+            corr = 1;
         if (indDuplo != endNulo()) {
-            for (i = 0; i < QTDE_INODE_INDIRETO && disco[indDuplo].inodeIndireto.endInd[i] != endNulo() && !corrompido;
+            for (i = 0; i < QTDE_INODE_INDIRETO && disco[indDuplo].inodeIndireto.endInd[i] != endNulo() && !corr;
                  i++) {
                 indSimples = disco[indDuplo].inodeIndireto.endInd[i];
+                if (disco[indSimples].bad == 1)
+                    corr = 1;
                 for (j = 0; j < QTDE_INODE_INDIRETO && disco[indSimples].inodeIndireto.endInd[j] != endNulo() && !
-                            corrompido; j++)
+                            corr; j++)
                     if (bad(disco[disco[indSimples].inodeIndireto.endInd[j]]))
-                        corrompido = 1;
+                        corr = 1;
             }
             indTriplo = blocoInode.inode.endTriploIndireto;
+            if (disco[indTriplo].bad == 1)
+                corr = 1;
             if (indTriplo != endNulo())
                 for (i = 0; i < QTDE_INODE_INDIRETO && disco[indTriplo].inodeIndireto.endInd[i] != endNulo() && !
-                            corrompido; i++) {
+                            corr; i++) {
                     indDuplo = disco[indTriplo].inodeIndireto.endInd[i];
+                    if (disco[indDuplo].bad == 1)
+                        corr = 1;
                     for (j = 0; j < QTDE_INODE_INDIRETO && disco[indDuplo].inodeIndireto.endInd[j] != endNulo() && !
-                                corrompido; j++) {
+                                corr; j++) {
                         indSimples = disco[indDuplo].inodeIndireto.endInd[j];
+                        if (disco[indSimples].bad == 1)
+                            corr = 1;
                         for (k = 0; k < QTDE_INODE_INDIRETO && disco[indSimples].inodeIndireto.endInd[k] != endNulo() &&
-                                    !corrompido; k++)
-                            if (bad(disco[disco[indSimples].inodeIndireto.endInd[k]]))
-                                corrompido = 1;
+                                    !corr; k++)
+                            if (i == QTDE_INODE_INDIRETO - 1 && j == QTDE_INODE_INDIRETO - 1 && k == QTDE_INODE_INDIRETO
+                                - 1)
+                                if (disco[disco[indSimples].inodeIndireto.endInd[k]].inode.permissao[0] != '\0')
+                                    corr = corrompido(disco, disco[disco[indSimples].inodeIndireto.endInd[k]]);
+                                else if (bad(disco[disco[indSimples].inodeIndireto.endInd[k]]))
+                                    corr = 1;
                     }
                 }
         }
     }
-    return corrompido;
+    return corr;
 }
 
 char listaVazia(Bloco disco) {
@@ -581,20 +597,29 @@ void listarStatus(Bloco *disco, int end) {
                         endSimples = disco[endDuplo].inodeIndireto.endInd[j];
                         while (k < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[k] != endNulo()) {
                             for (l = 2; l < disco[disco[endSimples].inodeIndireto.endInd[k]].dir.TL; l++)
-                                if (!dirVazio(disco[endSimples]))
-                                    if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].endInode].
-                                        inode.permissao[0] == '-')
-                                        if (!corrompido(
-                                            disco,
-                                            disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
-                                                endInode]))
-                                            printf("%s - Íntegro\n",
-                                                   disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
-                                                   nome);
-                                        else
-                                            printf("%s - Corrompido\n",
-                                                   disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
-                                                   nome);
+                                if (i == QTDE_INODE_INDIRETO - 1 && j == QTDE_INODE_INDIRETO - 1 && k ==
+                                    QTDE_INODE_INDIRETO
+                                    - 1)
+                                    if (disco[disco[endSimples].inodeIndireto.endInd[k]].inode.permissao[0] != '\0')
+                                        listarStatus(disco, disco[endSimples].inodeIndireto.endInd[k]);
+                                    else if (!dirVazio(disco[endSimples]))
+                                        if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                endInode].
+                                            inode.permissao[0] == '-')
+                                            if (!corrompido(
+                                                disco,
+                                                disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[
+                                                        l].
+                                                    endInode]))
+                                                printf("%s - Íntegro\n",
+                                                       disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[
+                                                           l].
+                                                       nome);
+                                            else
+                                                printf("%s - Corrompido\n",
+                                                       disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[
+                                                           l].
+                                                       nome);
                             k++;
                         }
                         j++;
@@ -694,7 +719,10 @@ void inserirInodeIS(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, 
         }
     }
     *qtBlocos = *qtBlocos - utilizados;
-    if (inseridoT && *qtBlocos > 0) {
+    if (inseridoT && *qtBlocos
+        >
+        0
+    ) {
         disco[endInodeInd].inodeIndireto.endInd[disco[endInodeInd].inodeIndireto.TL] = criarInode(
             disco, usuario, tipoArq, *qtBlocos, endInode, "");
         if (disco[endInodeInd].inodeIndireto.endInd[disco[endInodeInd].inodeIndireto.TL] != endNulo())
@@ -732,7 +760,7 @@ void inserirInodeIT(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, 
 }
 
 int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPai, char *caminho) {
-    int endBloco, blocosNec, blocosRest, utilizados = 0, i;
+    int endBloco, blocosNec, blocosRest, utilizados = 0, i, blocoAux;
     char permissao[11], data[30];
 
     blocosNec = (int) (ceil)((float) tamanho / (float) 10);
@@ -790,6 +818,16 @@ int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPa
                 disco[endBloco].inode.endTriploIndireto = criarInodeInd(disco);
             inserirInodeIT(disco, endBloco, disco[endBloco].inode.endTriploIndireto, &blocosRest, usuario, tipoArq);
         }
+        if (blocosRest > 0) {
+            pushBlocoLivre(
+                disco,
+                disco[disco[disco[disco[endBloco].inode.endTriploIndireto].inodeIndireto.endInd[4]].inodeIndireto.
+                    endInd[4]].inodeIndireto.endInd[4]);
+            disco[disco[disco[disco[endBloco].inode.endTriploIndireto].inodeIndireto.endInd[4]].inodeIndireto.endInd
+                        [4]]
+                    .inodeIndireto.endInd[4] = criarInode(disco, usuario, tipoArq, blocosRest * 10 + 1, endPai,
+                                                          caminho);
+        }
         if (endPai == endNulo())
             endPai = endBloco;
         if (tipoArq == 'd') {
@@ -802,7 +840,8 @@ int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPa
     return endNulo();
 }
 
-void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, char tipo, int tam, char *caminhoLink) {
+void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, char tipo, int tam,
+                      char *caminhoLink) {
     int i, j, k, endPai, indSimples, indDuplo, indTriplo;
     char achou;
 
@@ -869,7 +908,8 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
                         if (disco[indDuplo].inodeIndireto.endInd[i] == endNulo())
                             disco[indDuplo].inodeIndireto.endInd[i] = criarInodeInd(disco);
                         indSimples = disco[indDuplo].inodeIndireto.endInd[i];
-                        while (j < QTDE_INODE_INDIRETO && dirCheio(disco[disco[indSimples].inodeIndireto.endInd[j]]))
+                        while (j < QTDE_INODE_INDIRETO &&
+                               dirCheio(disco[disco[indSimples].inodeIndireto.endInd[j]]))
                             j++;
                         if (j < QTDE_INODE_INDIRETO)
                             achou = 1;
@@ -943,7 +983,9 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
                                                      nomeEntrada,
                                                      criarInode(disco, usuario, tipo, tam, end, caminhoLink));
                                 }
-                            }
+                            } else
+                                adicionarEntrada(disco, disco[indSimples].inodeIndireto.endInd[k], usuario,
+                                                 nomeEntrada, tipo, tam, caminhoLink);
                         }
                     }
                 }
