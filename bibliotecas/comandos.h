@@ -200,6 +200,7 @@ void listarAtributos(Bloco *disco, int end) {
         for (j = 2; j < disco[disco[end].inode.endDireto[i]].dir.TL; j++)
             if (!dirVazio(disco[disco[end].inode.endDireto[i]])) {
                 endInode = disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode;
+                strcpy(cor,RESET);
                 if (disco[endInode].inode.permissao[0] == 'd')
                     strcpy(cor,AZUL);
                 else if (disco[endInode].inode.permissao[0] == 'l')
