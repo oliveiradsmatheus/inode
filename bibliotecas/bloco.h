@@ -541,7 +541,7 @@ void listarStatus(Bloco *disco, int end) {
                     if (!corrompido(disco, disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode]))
                         printf("%s - Íntegro\n", disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
                     else
-                        printf("%s - Corrompido\n", disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
+                        printf("%s - %sCorrompido%s\n", disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome, VERMELHO, RESET);
             }
         i++;
     }
@@ -559,8 +559,8 @@ void listarStatus(Bloco *disco, int end) {
                             printf("%s - Íntegro\n",
                                    disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].nome);
                         else
-                            printf("%s - Corrompido\n",
-                                   disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].nome);
+                            printf("%s - %sCorrompido%s\n",
+                                   disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].nome, VERMELHO, RESET);
             i++;
         }
         if (disco[end].inode.endDuploIndireto != endNulo()) {
@@ -580,8 +580,8 @@ void listarStatus(Bloco *disco, int end) {
                                     printf("%s - Íntegro\n",
                                            disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].nome);
                                 else
-                                    printf("%s - Corrompido\n",
-                                           disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].nome);
+                                    printf("%s - %sCorrompido%s\n",
+                                           disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].nome, VERMELHO, RESET);
                     j++;
                 }
                 i++;
@@ -616,10 +616,9 @@ void listarStatus(Bloco *disco, int end) {
                                                            l].
                                                        nome);
                                             else
-                                                printf("%s - Corrompido\n",
+                                                printf("%s - %sCorrompido%s\n",
                                                        disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[
-                                                           l].
-                                                       nome);
+                                                           l].nome, VERMELHO, RESET);
                             k++;
                         }
                         j++;
