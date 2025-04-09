@@ -264,20 +264,33 @@ void arvore(Bloco *disco, int end, int nivel, int *vet) {
     strcpy(te, "├── ");
 #else
     traco[0] = 179;
-    strcat(traco, "\t");
+    traco[1] = ' ';
+    traco[2] = ' ';
+    traco[3] = ' ';
+    traco[4] = ' ';
+    traco[5] = '\0';
     curva[0] = 192;
-    curva[0] = 196;
-    curva[0] = 196;
-    curva[0] = " ";
+    curva[1] = 196;
+    curva[2] = 196;
+    curva[3] = ' ';
+    curva[4] = '\0';
     te[0] = 195;
-    te[0] = 196;
-    te[0] = 196;
-    te[0] = " ";
+    te[1] = 196;
+    te[2] = 196;
+    te[3] = ' ';
+    te[4] = '\0';
 #endif
 
     if (disco[disco[end].inode.endDireto[0]].dir.TL == 3)
         vet[nivel] = 1; // 1 significa o último diretorio!
 
+    /*while (i < nivel) {
+        if (vet[i] == 0)
+            strcat(espaco, traco);
+        else
+            strcat(espaco, "   \t");
+        i++;
+    }*/
     while (i < nivel) {
         if (vet[i] == 0)
             strcat(espaco, traco);
@@ -294,8 +307,10 @@ void arvore(Bloco *disco, int end, int nivel, int *vet) {
                 endDireto[i + 1] == endNulo()) {
                 vet[nivel] = 1;
                 strcat(espaco, curva);
+                //strcat(espaco, "--- ");
             } else
                 strcat(espaco, te);
+                //strcat(espaco, "|-- ");
             printf("%s%s\n", espaco, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
             arvore(disco, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode, nivel + 1, vet);
         }
