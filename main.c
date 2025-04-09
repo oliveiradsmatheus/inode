@@ -6,10 +6,12 @@
 #include "bibliotecas/bloco.h"
 #include "bibliotecas/comandos.h"
 #include "bibliotecas/sistema.h"
+#include "bibliotecas/cores.h"
 
 int main(void) {
+    habilitarCores();
     int tamDisco;
-    printf("Informe o tamanho do Disco: ");
+    printf(VERMELHO"Informe o tamanho do Disco: "RESET);
     scanf("%d", &tamDisco);
     executar(tamDisco);
     return 0;
