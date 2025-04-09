@@ -256,11 +256,11 @@ void listarAtributos(Bloco *disco, int end) {
 
 void arvore(Bloco *disco, int end, int nivel, int *vet) {
     int i = 1, j, k;
-    char espaco[400] = "", traco[5], curva[12], te[12];
+    char espaco[400] = "", traco[6], curva[12], te[12];
 
 #ifdef __linux__
     strcpy(traco, "│\t");
-    strcpy(curva,"└── ");
+    strcpy(curva, "└── ");
     strcpy(te, "├── ");
 #else
     traco[0] = 179;
@@ -283,19 +283,15 @@ void arvore(Bloco *disco, int end, int nivel, int *vet) {
 
     if (disco[disco[end].inode.endDireto[0]].dir.TL == 3)
         vet[nivel] = 1; // 1 significa o último diretorio!
-
-    /*while (i < nivel) {
-        if (vet[i] == 0)
-            strcat(espaco, traco);
-        else
-            strcat(espaco, "   \t");
-        i++;
-    }*/
     while (i < nivel) {
         if (vet[i] == 0)
             strcat(espaco, traco);
         else
+#ifdef __linux__
             strcat(espaco, "   \t");
+#else
+            strcat(espaco, "  ");
+#endif
         i++;
     }
     i = 0;
@@ -307,10 +303,8 @@ void arvore(Bloco *disco, int end, int nivel, int *vet) {
                 endDireto[i + 1] == endNulo()) {
                 vet[nivel] = 1;
                 strcat(espaco, curva);
-                //strcat(espaco, "--- ");
             } else
                 strcat(espaco, te);
-                //strcat(espaco, "|-- ");
             printf("%s%s\n", espaco, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
             arvore(disco, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode, nivel + 1, vet);
         }
@@ -1327,7 +1321,7 @@ void criarLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, char 
         if (buscaArquivo(disco, endDir, nomeArquivoDestino, &pos, &endAux) == -1)
             adicionarEntrada(disco, endDestino, usuario, nomeArquivoDestino, 'l', 1, caminho);
         else
-        printf("ln: falha ao criar link simbolico '%s': Nome do arquivo ja existe\n", nomeArquivoDestino);
+            printf("ln: falha ao criar link simbolico '%s': Nome do arquivo ja existe\n", nomeArquivoDestino);
     } else
         printf("ln: falha ao criar link simbolico '%s': Arquivo ou diretorio inexistente\n", caminhoDestino);
 }
