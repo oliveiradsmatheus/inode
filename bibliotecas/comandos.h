@@ -1262,7 +1262,7 @@ void tratarCaminho(char *origem, char *destino, char *origemFinal, char *pwd) {
 
 void criarLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, char *origem, char *destino,
                         char *caminhoAbs) {
-    int i = 0, j = 0, k, endDestino;
+    int i = 0, j = 0, k, endDestino, pos, endAux;
     char caminhoDestino[50], aux[50], nomeArquivoDestino[15], caminho[50];
 
     strcpy(caminhoDestino, destino);
@@ -1294,9 +1294,12 @@ void criarLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, char 
 
     if (endDestino != -1) {
         tratarCaminho(origem, destino, caminho, caminhoAbs);
-        adicionarEntrada(disco, endDestino, usuario, nomeArquivoDestino, 'l', 1, caminho);
+        if (buscaArquivo(disco, endDir, nomeArquivoDestino, &pos, &endAux) == -1)
+            adicionarEntrada(disco, endDestino, usuario, nomeArquivoDestino, 'l', 1, caminho);
+        else
+        printf("ln: falha ao criar link simbolico '%s': Nome do arquivo ja existe\n", nomeArquivoDestino);
     } else
-        printf("ln: falha ao criar link simbolico '%s': Arquivo ou diretorio inexistente", caminhoDestino);
+        printf("ln: falha ao criar link simbolico '%s': Arquivo ou diretorio inexistente\n", caminhoDestino);
 }
 
 char validarCriacaoDir(char *comando, char *nomeDir) {
