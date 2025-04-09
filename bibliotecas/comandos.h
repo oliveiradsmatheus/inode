@@ -12,11 +12,11 @@ void mostrarBlocos(Bloco *disco, int tamDisco) {
         if (i != 0 && !(i % 10))
             printf("\n");
         if (disco[i].bad)
-            printf("[%d: B]  ", i);
+            printf("[%d: %sB%s]  ", i, VERMELHO, RESET);
         else if (blocoLivre(disco, i)) {
-            printf("[%d: F]  ", i);
+            printf("[%d: %sF%s]  ", i, VERDE, RESET);
         } else
-            printf("[%d: A]  ", i);
+            printf("[%d: %sA%s]  ", i, AZUL, RESET);
     }
     printf("\n");
 }
@@ -41,33 +41,56 @@ void listar(Bloco *disco, int end) {
     int i, j, k, l, endSimples, endDuplo, endTriplo;
     char vazio = 1;
 
+    //verifico os endereços diretos do meu inode
     i = 0;
     while (i < QTDE_INODE_DIRETO && disco[end].inode.endDireto[i] != endNulo()) {
         for (j = 2; j < disco[disco[end].inode.endDireto[i]].dir.TL; j++)
             if (!dirVazio(disco[disco[end].inode.endDireto[i]])) {
-                printf("%s     ", disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
+                //verificar se é um diretório ou um arquivo
+                if (disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].inode.permissao[0] == 'd') {
+                    //se diretório
+                    printf(AZUL);
+                }
+                else if (disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].inode.permissao[0] == 'l') {
+                    //se link
+                    printf(CIANO);
+                }
+                printf("%s     ",
+                    disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
+                printf(RESET);
                 vazio = 0;
             }
         if (!vazio)
             printf("\n");
         i++;
     }
+
+    //tratar oq estiver no meu i-node indireto
     i = 0;
     if (disco[end].inode.endSimplesIndireto != endNulo()) {
         endSimples = disco[end].inode.endSimplesIndireto;
-        while (i < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[i] !=
-               endNulo()) {
+        while (i < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[i] != endNulo()) {
             for (j = 2; j < disco[disco[endSimples].inodeIndireto.endInd[i]].dir.TL; j++)
-                if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[i]])
-                    && !bad(
-                        disco[disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].
-                            endInode]))
+                if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[i]]) &&
+                    !bad(disco[disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode])) {
+                    //verificar se é um diretório ou arquivo
+                    if (disco[disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode].inode.permissao[0] == 'd') {
+                        //diretório
+                        printf(AZUL);
+                    }
+                    else if (disco[disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode].inode.permissao[0] == 'l'){
+                        //link
+                        printf(CIANO);
+                    }
                     printf("%s     ",
-                           disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].
-                           nome);
+                        disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].nome);
+                    printf(RESET);
+                }
             printf("\n");
             i++;
         }
+
+        //tratar o i-node duplo indireto
         if (disco[end].inode.endDuploIndireto != endNulo()) {
             i = 0;
             endDuplo = disco[end].inode.endDuploIndireto;
@@ -76,13 +99,28 @@ void listar(Bloco *disco, int end) {
                 endSimples = disco[endDuplo].inodeIndireto.endInd[i];
                 while (j < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[j] != endNulo()) {
                     for (k = 2; k < disco[disco[endSimples].inodeIndireto.endInd[j]].dir.TL; k++)
-                        if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[j]]))
-                            printf("%s     ", disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].nome);
+                        if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[j]])) {
+                            //verificar se é um diretório ou arquivo
+                            int posInode = disco[end].dir.arquivo[i].endInode;
+                            if (disco[disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[j].endInode].inode.permissao[0] == 'd') {
+                                //diretório
+                                printf(AZUL);
+                            }
+                            else if (disco[disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[j].endInode].inode.permissao[0] == 'l'){
+                                //link
+                                printf(CIANO);
+                            }
+                            printf("%s     ",
+                                disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].nome);
+                            printf(RESET);
+                        }
                     printf("\n");
                     j++;
                 }
                 i++;
             }
+
+            //tratar o i-node triplo indireto
             if (disco[end].inode.endTriploIndireto != endNulo()) {
                 i = 0;
                 endTriplo = disco[end].inode.endTriploIndireto;
@@ -99,10 +137,21 @@ void listar(Bloco *disco, int end) {
                                     listar(disco, disco[endSimples].inodeIndireto.endInd[k]);
                                 else {
                                     for (l = 2; l < disco[disco[endSimples].inodeIndireto.endInd[k]].dir.TL; l++)
-                                        if (!dirVazio(disco[endSimples]))
+                                        if (!dirVazio(disco[endSimples])) {
+                                            //verificar se é diretório ou arquivo
+                                            if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[k].endInode].inode.permissao[0] == 'd') {
+                                                //diretório
+                                                printf(AZUL);
+                                            }
+                                            else if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[k].endInode].inode.permissao[0] == 'l'){
+                                                //link
+                                                printf(CIANO);
+                                            }
                                             printf("%s     ",
-                                                   disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
-                                                   nome);
+                                                disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                nome);
+                                            printf(RESET);
+                                        }
                                     printf("\n");
                                 }
                             k++;
