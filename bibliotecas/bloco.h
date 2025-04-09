@@ -1006,9 +1006,9 @@ int adicionarEntradasRaiz(Bloco *disco, int endRaiz, char *usuario) {
     adicionarEntrada(disco, endUsuario, usuario, "Documentos", 'd', 1, "");
     adicionarEntrada(disco, endUsuario, usuario, "Downloads", 'd', 1, "");
     adicionarEntrada(disco, endUsuario, usuario, "Imagens", 'd', 1, "");
-    adicionarEntrada(disco, endUsuario, usuario, "Músicas", 'd', 1, "");
-    adicionarEntrada(disco, endUsuario, usuario, "Público", 'd', 1, "");
-    adicionarEntrada(disco, endUsuario, usuario, "Vídeos", 'd', 1, "");
+    adicionarEntrada(disco, endUsuario, usuario, "Musicas", 'd', 1, "");
+    adicionarEntrada(disco, endUsuario, usuario, "Publico", 'd', 1, "");
+    adicionarEntrada(disco, endUsuario, usuario, "Videos", 'd', 1, "");
     adicionarEntrada(disco, endRaiz, usuario, "bin", 'd', 1, "");
     adicionarEntrada(disco, endRaiz, usuario, "boot", 'd', 1, "");
     adicionarEntrada(disco, endRaiz, usuario, "dev", 'd', 1, "");

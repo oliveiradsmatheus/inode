@@ -256,14 +256,31 @@ void listarAtributos(Bloco *disco, int end) {
 
 void arvore(Bloco *disco, int end, int nivel, int *vet) {
     int i = 1, j, k;
-    char espaco[400] = "";
+    char espaco[400] = "", traco[5], curva[12], te[12];
+
+#ifdef __linux__
+    strcpy(traco, "│\t");
+    strcpy(curva,"└── ");
+    strcpy(te, "├── ");
+#else
+    traco[0] = 179;
+    strcat(traco, "\t");
+    curva[0] = 192;
+    curva[0] = 196;
+    curva[0] = 196;
+    curva[0] = " ";
+    te[0] = 195;
+    te[0] = 196;
+    te[0] = 196;
+    te[0] = " ";
+#endif
 
     if (disco[disco[end].inode.endDireto[0]].dir.TL == 3)
         vet[nivel] = 1; // 1 significa o último diretorio!
 
     while (i < nivel) {
         if (vet[i] == 0)
-            strcat(espaco, "│\t");
+            strcat(espaco, traco);
         else
             strcat(espaco, "   \t");
         i++;
@@ -271,18 +288,16 @@ void arvore(Bloco *disco, int end, int nivel, int *vet) {
     i = 0;
     while (i < QTDE_INODE_DIRETO && disco[end].inode.endDireto[i] != endNulo()) {
         for (j = 2; j < disco[disco[end].inode.endDireto[i]].dir.TL; j++) {
-            //if (disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].inode.permissao[0] == 'd') {
             k = nivel * 4 - 4;
             espaco[k] = '\0';
             if (j + 1 == disco[disco[end].inode.endDireto[i]].dir.TL && i < QTDE_INODE_DIRETO && disco[end].inode.
                 endDireto[i + 1] == endNulo()) {
-                vet[nivel] = 1; // 1 significa o último diretorio!
-                strcat(espaco, "└── ");
+                vet[nivel] = 1;
+                strcat(espaco, curva);
             } else
-                strcat(espaco, "├── ");
+                strcat(espaco, te);
             printf("%s%s\n", espaco, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
             arvore(disco, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode, nivel + 1, vet);
-            //}
         }
         i++;
     }

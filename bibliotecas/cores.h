@@ -9,19 +9,19 @@
 #define BRANCO      "\033[37m"
 
 void habilitarEVTP() {
-    #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
-    #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
-    #endif
+#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+#endif
 }
 
-void habilitarCores(){
-    #ifdef __linux__
-    #else
+void habilitarCores() {
+#ifdef __linux__
+#else
         habilitarEVTP();//EVTP: ENABLE_VIRTUAL_TERMINAL_PROCESSING
         HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
         DWORD dwMode = 0;
         GetConsoleMode(hOut, &dwMode);
         dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
         SetConsoleMode(hOut, dwMode);
-    #endif
+#endif
 }

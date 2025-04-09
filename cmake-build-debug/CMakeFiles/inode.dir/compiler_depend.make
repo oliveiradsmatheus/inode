@@ -4,6 +4,7 @@
 CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/main.c \
   /home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/bloco.h \
   /home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/comandos.h \
+  /home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/cores.h \
   /home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/sistema.h \
   /usr/include/alloca.h \
   /usr/include/bits/atomic_wide_counter.h \
@@ -98,8 +99,6 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
 
 /usr/include/bits/wordsize.h:
 
-/usr/include/bits/types/timer_t.h:
-
 /usr/include/bits/types/struct_tm.h:
 
 /usr/include/bits/waitflags.h:
@@ -132,6 +131,8 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
 
 /usr/include/bits/types/__fpos_t.h:
 
+/usr/include/bits/types/__FILE.h:
+
 /usr/include/bits/uintn-identity.h:
 
 /usr/include/bits/types/time_t.h:
@@ -151,8 +152,6 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
 /usr/include/bits/pthreadtypes.h:
 
 /usr/include/bits/byteswap.h:
-
-/home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/bloco.h:
 
 /usr/include/bits/atomic_wide_counter.h:
 
@@ -180,6 +179,14 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
 
 /usr/include/bits/struct_rwlock.h:
 
+/home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/bloco.h:
+
+/usr/include/bits/types/timer_t.h:
+
+/home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/cores.h:
+
+/home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/sistema.h:
+
 /usr/include/bits/types/struct_FILE.h:
 
 /usr/include/bits/libm-simd-decl-stubs.h:
@@ -187,8 +194,6 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
 /usr/include/bits/mathcalls-macros.h:
 
 /usr/include/bits/stdint-intn.h:
-
-/home/matheus/Documentos/Unoeste/Sistemas\ Operacionais\ II/inode/bibliotecas/sistema.h:
 
 /usr/include/bits/endian.h:
 
@@ -225,5 +230,3 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
 /usr/include/endian.h:
 
 /usr/include/bits/types.h:
-
-/usr/include/bits/types/__FILE.h:
