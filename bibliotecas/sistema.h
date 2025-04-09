@@ -6,7 +6,7 @@ int criarRaiz(Bloco *disco, char *usuario) {
 }
 
 char caminhoUsuario(char *caminho, char *usuario, char *caminhoAbreviado) {
-    char caminhoUsuario[20] = "/home/";
+    char caminhoUsuario[100] = "/home/";
     int i = 0, j = 2;
 
     strcat(caminhoUsuario, usuario);
@@ -25,7 +25,7 @@ char caminhoUsuario(char *caminho, char *usuario, char *caminhoAbreviado) {
 }
 
 void execTerminal(Bloco *disco, int endRaiz, int endUsuario, char *usuario, int tamDisco) {
-    char c, comando[70], caminho[50] = "/home/", caminhoAbreviado[30] = "~/";
+    char c, comando[70], caminho[200] = "/home/", caminhoAbreviado[190] = "~/";
     int endAtual = endUsuario;
 
     strcat(caminho, usuario);

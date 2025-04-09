@@ -266,8 +266,8 @@ void arvore(Bloco *disco, int end, int nivel, int *vet) {
     traco[0] = 179;
     traco[1] = ' ';
     traco[2] = ' ';
-    traco[3] = ' ';
-    traco[4] = ' ';
+    traco[3] = '\t';
+    traco[4] = '\0';
     traco[5] = '\0';
     curva[0] = 192;
     curva[1] = 196;
@@ -285,12 +285,13 @@ void arvore(Bloco *disco, int end, int nivel, int *vet) {
         vet[nivel] = 1; // 1 significa o último diretorio!
     while (i < nivel) {
         if (vet[i] == 0)
-            strcat(espaco, traco);
+            //strcat(espaco, traco);
+            strcat(espaco, "|  \t");
         else
 #ifdef __linux__
             strcat(espaco, "   \t");
 #else
-            strcat(espaco, "  ");
+            strcat(espaco, "   \t");
 #endif
         i++;
     }
@@ -302,9 +303,11 @@ void arvore(Bloco *disco, int end, int nivel, int *vet) {
             if (j + 1 == disco[disco[end].inode.endDireto[i]].dir.TL && i < QTDE_INODE_DIRETO && disco[end].inode.
                 endDireto[i + 1] == endNulo()) {
                 vet[nivel] = 1;
-                strcat(espaco, curva);
+                strcat(espaco, "`-- ");
+                //strcat(espaco, curva);
             } else
-                strcat(espaco, te);
+                strcat(espaco, "|-- ");
+                //strcat(espaco, te);
             printf("%s%s\n", espaco, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
             arvore(disco, disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode, nivel + 1, vet);
         }
