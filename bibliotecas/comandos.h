@@ -150,11 +150,16 @@ void listarAtributos(Bloco *disco, int end) {
         for (j = 2; j < disco[disco[end].inode.endDireto[i]].dir.TL; j++)
             if (!dirVazio(disco[disco[end].inode.endDireto[i]])) {
                 endInode = disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode;
-                printf("%s\t%d\t%s\t%s\tCriado: %s\t Ultimo acesso: %s\tUltima alteracao: %s\t%s\n",
+                printf("%s\t%d\t%s\t%s\t%s\t%s",
                        disco[endInode].inode.permissao, disco[endInode].inode.contadorLink,
-                       disco[endInode].inode.proprietario, disco[endInode].inode.grupo, disco[endInode].inode.criacao,
-                       disco[endInode].inode.ultimoAcesso, disco[endInode].inode.ultimaAlteracao,
+                       disco[endInode].inode.proprietario, disco[endInode].inode.grupo,
+                       disco[endInode].inode.ultimaAlteracao,
                        disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
+                if (disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].inode.permissao[0] == 'l')
+                    printf(" -> %s",
+                           disco[disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].inode.endDireto[0]]
+                           .softLink.caminho);
+                printf("\n");
             }
         i++;
     }
@@ -165,13 +170,18 @@ void listarAtributos(Bloco *disco, int end) {
             for (j = 2; j < disco[disco[endSimples].inodeIndireto.endInd[i]].dir.TL; j++)
                 if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[i]])) {
                     endInode = disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode;
-                    printf("%s\t%d\t%s\t%s\tCriado: %s\t Ultimo acesso: %s\tUltima alteracao: %s\t%s\n",
+                    printf("%s\t%d\t%s\t%s\t%s\t%s",
                            disco[endInode].inode.permissao, disco[endInode].inode.contadorLink,
                            disco[endInode].inode.proprietario, disco[endInode].inode.grupo,
-                           disco[endInode].inode.criacao,
-                           disco[endInode].inode.ultimoAcesso, disco[endInode].inode.ultimaAlteracao,
+                           disco[endInode].inode.ultimaAlteracao,
                            disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].
                            nome);
+                    if (disco[disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode].inode.permissao[
+                            0] == 'l')
+                        printf(" -> %s",
+                               disco[disco[disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode].
+                                   inode.endDireto[0]].softLink.caminho);
+                    printf("\n");
                 }
             i++;
         }
@@ -185,12 +195,17 @@ void listarAtributos(Bloco *disco, int end) {
                     for (k = 2; k < disco[disco[endSimples].inodeIndireto.endInd[j]].dir.TL; k++)
                         if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[j]])) {
                             endInode = disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].endInode;
-                            printf("%s\t%d\t%s\t%s\tCriado: %s\t Ultimo acesso: %s\tUltima alteracao: %s\t%s\n",
+                            printf("%s\t%d\t%s\t%s\t%s\t%s",
                                    disco[endInode].inode.permissao, disco[endInode].inode.contadorLink,
                                    disco[endInode].inode.proprietario, disco[endInode].inode.grupo,
-                                   disco[endInode].inode.criacao,
-                                   disco[endInode].inode.ultimoAcesso, disco[endInode].inode.ultimaAlteracao,
+                                   disco[endInode].inode.ultimaAlteracao,
                                    disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].nome);
+                            if (disco[disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].endInode].inode.
+                                permissao[0] == 'l')
+                                printf(" -> %s",
+                                       disco[disco[disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].
+                                           endInode].inode.endDireto[0]].softLink.caminho);
+                            printf("\n");
                         }
                     j++;
                 }
@@ -216,13 +231,17 @@ void listarAtributos(Bloco *disco, int end) {
                                             endInode = disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
                                                     endInode;
                                             printf(
-                                                "%s\t%d\t%s\t%s\tCriado: %s\t Ultimo acesso: %s\tUltima alteracao: %s\t%s\n",
+                                                "%s\t%d\t%s\t%s\t%s\t%s",
                                                 disco[endInode].inode.permissao, disco[endInode].inode.contadorLink,
                                                 disco[endInode].inode.proprietario, disco[endInode].inode.grupo,
-                                                disco[endInode].inode.criacao,
-                                                disco[endInode].inode.ultimoAcesso,
                                                 disco[endInode].inode.ultimaAlteracao,
                                                 disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].nome);
+                                            if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                    endInode].inode.permissao[0] == 'l')
+                                                printf(" -> %s",
+                                                       disco[disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.
+                                                           arquivo[l].endInode].inode.endDireto[0]].softLink.caminho);
+                                            printf("\n");
                                         }
                             k++;
                         }
@@ -271,7 +290,7 @@ void arvore(Bloco *disco, int end, int nivel, int *vet) {
 
 void chmod(Bloco *disco, int endDir, char *nomeArq, char *permUsuario, char *tipoPerm, char tipo) {
     int pos, endArq, i, j;
-    char busca, novaPerm[11];
+    char busca, novaPerm[11], data[30];
 
     busca = buscaArquivo(disco, endDir, nomeArq, &pos, &endArq);
 
@@ -333,7 +352,6 @@ void chmod(Bloco *disco, int endDir, char *nomeArq, char *permUsuario, char *tip
                     }
                     i--;
                 }
-                printf("adicionar\n ");
                 break;
             case '-':
                 i = strlen(permUsuario) - 1;
@@ -389,9 +407,10 @@ void chmod(Bloco *disco, int endDir, char *nomeArq, char *permUsuario, char *tip
                     }
                     i--;
                 }
-                printf("remover\n ");
                 break;
         }
+        horarioLocal(data);
+        strcpy(disco[disco[endArq].dir.arquivo[pos].endInode].inode.ultimaAlteracao, data);
         strcpy(disco[disco[endArq].dir.arquivo[pos].endInode].inode.permissao, novaPerm);
     } else
         printf("Arquivo nao encontrado\n");
@@ -1190,9 +1209,61 @@ void criarLinkFisico(Bloco *disco, int raiz, char *usuario, int endDir, char *or
         printf("ln: falha ao criar link simbolico '%s': Arquivo ou diretorio inexistente\n", caminhoOrigem);
 }
 
-void criarLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, char *origem, char *destino) {
+void remanejarCaminho(char *caminho) {
+    char aux[50];
+    int i, j;
+
+    strcpy(aux, caminho);
+    i = 2;
+    j = 0;
+    while (i < strlen(aux))
+        caminho[j++] = aux[i++];
+    caminho[j] = '\0';
+}
+
+void caminhoAbsoluto(char *caminho, char *pwd) {
+    char aux[50];
+
+    strcpy(aux, caminho);
+    if (aux[0] == '.' && aux[1] == '/')
+        remanejarCaminho(aux);
+    strcpy(caminho, pwd);
+    strcat(caminho, "/");
+    strcat(caminho, aux);
+}
+
+void tratarCaminho(char *origem, char *destino, char *origemFinal, char *pwd) {
+    int i, j;
+
+    if (origem[0] != '/')
+        caminhoAbsoluto(origem, pwd);
+    if (destino[0] != '/')
+        caminhoAbsoluto(destino, pwd);
+
+    i = 1;
+    while (i < strlen(origem) && i < strlen(destino) && origem[i] == destino[i])
+        i++;
+    if (i > 1 && origem[i - 1] == '/' && i == strlen(destino)) {
+        j = 0;
+        strcpy(origemFinal, "");
+        while (i < strlen(origem))
+            origemFinal[j++] = origem[i++];
+        origemFinal[j] = '\0';
+    } else if (i > 1 && origem[i] == '/' && i == strlen(destino)) {
+        i++;
+        j = 0;
+        strcpy(origemFinal, "");
+        while (i < strlen(origem))
+            origemFinal[j++] = origem[i++];
+        origemFinal[j] = '\0';
+    } else
+        strcpy(origemFinal, origem);
+}
+
+void criarLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, char *origem, char *destino,
+                        char *caminhoAbs) {
     int i = 0, j = 0, k, endDestino;
-    char caminhoDestino[50], aux[50], nomeArquivoDestino[15];
+    char caminhoDestino[50], aux[50], nomeArquivoDestino[15], caminho[50];
 
     strcpy(caminhoDestino, destino);
     aux[0] = '\0';
@@ -1221,9 +1292,10 @@ void criarLinkSimbolico(Bloco *disco, int raiz, char *usuario, int endDir, char 
 
     endDestino = buscaEntradaDiretorio(disco, raiz, endDir, destino, usuario);
 
-    if (endDestino != -1)
-        adicionarEntrada(disco, endDestino, usuario, nomeArquivoDestino, 'l', 1, origem);
-    else
+    if (endDestino != -1) {
+        tratarCaminho(origem, destino, caminho, caminhoAbs);
+        adicionarEntrada(disco, endDestino, usuario, nomeArquivoDestino, 'l', 1, caminho);
+    } else
         printf("ln: falha ao criar link simbolico '%s': Arquivo ou diretorio inexistente", caminhoDestino);
 }
 
@@ -1366,17 +1438,18 @@ void diminuirBlocos(Bloco *disco, int endInode, int *quant) {
 
     i = QTDE_INODE_INDIRETO - 1;
     endTriplo = disco[endInode].inode.endTriploIndireto;
-    if (disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]) {
-        diminuirBlocos(
-            disco,
-            disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4],
-            &*quant);
-        pushBlocoLivre(
-            disco,
-            disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]);
-        disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4] =
-                popBlocoLivre(disco);
-    }
+    if (endTriplo != endNulo())
+        if (disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]) {
+            diminuirBlocos(
+                disco,
+                disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4],
+                &*quant);
+            pushBlocoLivre(
+                disco,
+                disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]);
+            disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4] =
+                    popBlocoLivre(disco);
+        }
     if (endTriplo != endNulo()) {
         while (i >= 0 && *quant > 0) {
             j = QTDE_INODE_INDIRETO - 1;
@@ -1480,7 +1553,7 @@ void diminuirBlocos(Bloco *disco, int endInode, int *quant) {
 }
 
 void rm(Bloco *disco, int endEntrada, char *nomeArq) {
-    int end, pos, i = 0, inodeArq, tam;
+    int end, pos, i = 0, inodeArq, tam, endExcluir;
 
     if (buscaArquivo(disco, endEntrada, nomeArq, &pos, &end) == -1)
         printf("rm: falhou em remover '%s': Arquivo ou diretorio inexistente\n", nomeArq);
@@ -1502,7 +1575,8 @@ void rm(Bloco *disco, int endEntrada, char *nomeArq) {
                 printf("rm: falhou em remover '%s': Diretorio nao vazio\n", nomeArq);
         } else {
             i = pos;
-            while (i < disco[end].dir.TL - 1) {
+            endExcluir = disco[end].dir.arquivo[i].endInode;
+            while (i < disco[end].dir.TL) {
                 strcpy(disco[end].dir.arquivo[i].nome, disco[end].dir.arquivo[i + 1].nome);
                 disco[end].dir.arquivo[i].endInode = disco[end].dir.arquivo[i + 1].endInode;
                 i++;
@@ -1512,13 +1586,14 @@ void rm(Bloco *disco, int endEntrada, char *nomeArq) {
                 pushBlocoLivre(disco, disco[inodeArq].inode.endDireto[0]);
                 pushBlocoLivre(disco, inodeArq);
             } else {
-                disco[disco[end].dir.arquivo[i].endInode].inode.contadorLink--;
-                if (disco[disco[end].dir.arquivo[i].endInode].inode.contadorLink == 0) {
+                disco[endExcluir].inode.contadorLink--;
+                if (disco[endExcluir].inode.contadorLink == 0) {
                     tam = (int) (ceil)((float) disco[inodeArq].inode.tamanho / (float) 10);
                     diminuirBlocos(disco, inodeArq, &tam);
                     pushBlocoLivre(disco, inodeArq);
                 }
             }
+            inicializarBloco(&disco[endExcluir]);
         }
     }
 }
@@ -1980,7 +2055,7 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
                        destino);
             else {
                 if (tipoLink == 1)
-                    criarLinkSimbolico(disco, raiz, usuario, end, origem, destino);
+                    criarLinkSimbolico(disco, raiz, usuario, end, origem, destino, caminho);
                 else
                     criarLinkFisico(disco, raiz, usuario, end, origem, destino);
             }

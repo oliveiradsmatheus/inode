@@ -224,11 +224,11 @@ char corrompido(Bloco *disco, Bloco blocoInode) {
                         for (k = 0; k < QTDE_INODE_INDIRETO && disco[indSimples].inodeIndireto.endInd[k] != endNulo() &&
                                     !corr; k++)
                             if (i == QTDE_INODE_INDIRETO - 1 && j == QTDE_INODE_INDIRETO - 1 && k == QTDE_INODE_INDIRETO
-                                - 1)
+                                - 1) {
                                 if (disco[disco[indSimples].inodeIndireto.endInd[k]].inode.permissao[0] != '\0')
                                     corr = corrompido(disco, disco[disco[indSimples].inodeIndireto.endInd[k]]);
-                                else if (bad(disco[disco[indSimples].inodeIndireto.endInd[k]]))
-                                    corr = 1;
+                            } else if (bad(disco[disco[indSimples].inodeIndireto.endInd[k]]))
+                                corr = 1;
                     }
                 }
         }
@@ -760,7 +760,7 @@ void inserirInodeIT(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, 
 }
 
 int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPai, char *caminho) {
-    int endBloco, blocosNec, blocosRest, utilizados = 0, i, blocoAux;
+    int endBloco, blocosNec, blocosRest, utilizados = 0, i;
     char permissao[11], data[30];
 
     blocosNec = (int) (ceil)((float) tamanho / (float) 10);

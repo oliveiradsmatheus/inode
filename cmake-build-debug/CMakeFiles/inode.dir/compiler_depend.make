@@ -17,7 +17,6 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
   /usr/include/bits/fp-logb.h \
   /usr/include/bits/libc-header-start.h \
   /usr/include/bits/libm-simd-decl-stubs.h \
-  /usr/include/bits/locale.h \
   /usr/include/bits/long-double.h \
   /usr/include/bits/math-vector.h \
   /usr/include/bits/mathcalls-helper-functions.h \
@@ -65,7 +64,6 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
   /usr/include/features.h \
   /usr/include/gnu/stubs-64.h \
   /usr/include/gnu/stubs.h \
-  /usr/include/locale.h \
   /usr/include/math.h \
   /usr/include/stdc-predef.h \
   /usr/include/stdio.h \
@@ -98,11 +96,11 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
 
 /usr/include/math.h:
 
-/usr/include/locale.h:
-
 /usr/include/bits/wordsize.h:
 
 /usr/include/bits/types/timer_t.h:
+
+/usr/include/bits/types/struct_tm.h:
 
 /usr/include/bits/waitflags.h:
 
@@ -134,8 +132,6 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
 
 /usr/include/bits/types/__fpos_t.h:
 
-/usr/include/bits/types/__FILE.h:
-
 /usr/include/bits/uintn-identity.h:
 
 /usr/include/bits/types/time_t.h:
@@ -151,10 +147,6 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
 /usr/include/sys/select.h:
 
 /usr/include/bits/floatn-common.h:
-
-/usr/include/bits/types/struct_tm.h:
-
-/usr/include/bits/locale.h:
 
 /usr/include/bits/pthreadtypes.h:
 
@@ -233,3 +225,5 @@ CMakeFiles/inode.dir/main.c.o: /home/matheus/Documentos/Unoeste/Sistemas\ Operac
 /usr/include/endian.h:
 
 /usr/include/bits/types.h:
+
+/usr/include/bits/types/__FILE.h:
