@@ -25,7 +25,7 @@ char caminhoUsuario(char *caminho, char *usuario, char *caminhoAbreviado) {
 }
 
 void execTerminal(Bloco *disco, int endRaiz, int endUsuario, char *usuario, int tamDisco) {
-    char c, comando[70], caminho[200] = "/home/", caminhoAbreviado[190] = "~/";
+    char c, comando[100], caminho[200] = "/home/", caminhoAbreviado[190] = "~/";
     int endAtual = endUsuario;
 
     strcat(caminho, usuario);
