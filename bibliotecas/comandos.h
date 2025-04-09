@@ -1345,14 +1345,7 @@ void tratarCaminho(char *origem, char *destino, char *origemFinal, char *pwd) {
     i = 1;
     while (i < strlen(origem) && i < strlen(destino) && origem[i] == destino[i])
         i++;
-    if (i > 1 && origem[i - 1] == '/' && i == strlen(destino)) {
-        j = 0;
-        strcpy(origemFinal, "");
-        while (i < strlen(origem))
-            origemFinal[j++] = origem[i++];
-        origemFinal[j] = '\0';
-    } else if (i > 1 && origem[i] == '/' && i == strlen(destino)) {
-        i++;
+    if (i > 1 && (origem[i - 1] == '/' || origem[i] == '/') && i == strlen(destino)) {
         j = 0;
         strcpy(origemFinal, "");
         while (i < strlen(origem))
