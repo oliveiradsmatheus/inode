@@ -1504,12 +1504,12 @@ void aumentarBlocos(Bloco *disco, int endInode, int quant) {
                         if (disco[endDuplo].inodeIndireto.endInd[j] == endNulo())
                             disco[endDuplo].inodeIndireto.endInd[j] = criarInodeInd(disco);
                         endSimples = disco[endDuplo].inodeIndireto.endInd[j];
-                        while (k < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[k] !=
-                               endNulo())
+                        while (k < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[k] != endNulo())
                             k++;
                         if (i == QTDE_INODE_INDIRETO - 1 && j == QTDE_INODE_INDIRETO - 1 && k == QTDE_INODE_INDIRETO) {
                             if (disco[endSimples].inodeIndireto.endInd[k - 1] != endNulo()) {
                                 pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[k - 1]);
+                                disco[endSimples].inodeIndireto.TL--;
                                 disco[endSimples].inodeIndireto.endInd[k - 1] = criarInode(
                                     disco, disco[endInode].inode.proprietario,
                                     'a', 1, 1, "");
@@ -1532,22 +1532,19 @@ void aumentarBlocos(Bloco *disco, int endInode, int quant) {
 }
 
 void diminuirBlocos(Bloco *disco, int endInode, int *quant) {
-    int i, j, k, endSimples, endDuplo, endTriplo;
+    int i, j, k, endSimples, endDuplo, endTriplo, ultimoEnd;
 
     i = QTDE_INODE_INDIRETO - 1;
     endTriplo = disco[endInode].inode.endTriploIndireto;
-    if (endTriplo != endNulo() && !bad(disco[endTriplo]))
-        if (disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]) {
-            diminuirBlocos(
-                disco,
-                disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4],
-                &*quant);
-            pushBlocoLivre(
-                disco,
-                disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]);
-            disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4] =
-                    popBlocoLivre(disco);
+    if (endTriplo != endNulo() && !bad(disco[endTriplo])) {
+        ultimoEnd = disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[
+            4];
+        if (ultimoEnd != endNulo() /*&& ultimoEnd != 0*/) {
+            diminuirBlocos(disco, ultimoEnd, &*quant);
+            pushBlocoLivre(disco, ultimoEnd);
+            inicializarBloco(&disco[ultimoEnd]);
         }
+    }
     if (endTriplo != endNulo() && !bad(disco[endTriplo])) {
         while (i >= 0 && *quant > 0) {
             if (disco[endTriplo].inodeIndireto.endInd[i] != endNulo()) {
@@ -1709,7 +1706,7 @@ void rm(Bloco *disco, int endEntrada, char *nomeArq) {
 }
 
 void removerLinkFisico(Bloco *disco, int raiz, char *usuario, int endDir, char *destino) {
-    int i = 0, j = 0, k, endDestino, pos, endEntrada, inode;
+    int i = 0, j = 0, k, endDestino, pos, endEntrada, inode, quant = 1;
     char caminhoArquivo[50], aux[50], nomeArquivo[15];
 
     strcpy(caminhoArquivo, destino);
@@ -1750,8 +1747,8 @@ void removerLinkFisico(Bloco *disco, int raiz, char *usuario, int endDir, char *
                 }
                 disco[endEntrada].dir.TL--;
                 disco[inode].inode.contadorLink--;
-                //diminuirBlocos(disco, inode, 1);
-                //pushBlocoLivre(disco, inode);
+                diminuirBlocos(disco, inode, &quant);
+                pushBlocoLivre(disco, inode);
             }
         }
     } else

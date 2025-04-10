@@ -319,6 +319,8 @@ int qtdeBlocosNecessarios(int qtdeBlocos) {
             }
         }
     }
+    if (qtdeBlocos > 0)
+        return cont + qtdeBlocosNecessarios(qtdeBlocos);
     return cont;
 }
 
@@ -342,7 +344,8 @@ int qtdeBlocosLivres(Bloco *disco) {
             endBloco = disco[end].listaBlocosLivres.end[i];
             if (!bad(disco[endBloco]))
                 qtde++;
-        }end = disco[end].listaBlocosLivres.endProxLista;
+        }
+        end = disco[end].listaBlocosLivres.endProxLista;
     }
     for (i = 0; i <= disco[end].listaBlocosLivres.topo; i++) {
         endBloco = disco[end].listaBlocosLivres.end[i];
@@ -722,29 +725,31 @@ int criarInodeInd(Bloco *disco) {
     int i = 0, bloco;
 
     bloco = popBlocoLivre(disco);
-    for (i = 0; i < QTDE_INODE_INDIRETO; i++)
-        disco[bloco].inodeIndireto.endInd[i] = -1;
-    disco[bloco].inodeIndireto.TL = 0;
+    if (bloco != -1) {
+        for (i = 0; i < QTDE_INODE_INDIRETO; i++)
+            disco[bloco].inodeIndireto.endInd[i] = -1;
+        disco[bloco].inodeIndireto.TL = 0;
+    }
 
     return bloco;
 }
 
 void inserirInodeIS(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, int inseridoT, char *usuario,
                     char tipoArq) {
-    int utilizados = 0;
+    int bloco;
 
     if (disco[endInodeInd].inodeIndireto.TL < QTDE_INODE_INDIRETO - inseridoT) {
         int inicio = disco[endInodeInd].inodeIndireto.TL;
-        while (/*inicio < *qtBlocos*/ *qtBlocos > 0 && inicio < QTDE_INODE_INDIRETO - inseridoT) {
-            disco[endInodeInd].inodeIndireto.endInd[inicio] = popBlocoLivre(disco);
-            if (disco[endInodeInd].inodeIndireto.endInd[inicio] != endNulo())
+        while (*qtBlocos > 0 && inicio < QTDE_INODE_INDIRETO - inseridoT) {
+            bloco = popBlocoLivre(disco);
+            if (bloco != 0 && bloco != endNulo()) {
+                disco[endInodeInd].inodeIndireto.endInd[inicio] = bloco;
                 disco[endInodeInd].inodeIndireto.TL++;
-                //utilizados++;
-            (*qtBlocos)--;
+                (*qtBlocos)--;
+            }
             inicio++;
         }
     }
-    //*qtBlocos = *qtBlocos - utilizados;
     if (inseridoT && *qtBlocos > 0) {
         disco[endInodeInd].inodeIndireto.endInd[disco[endInodeInd].inodeIndireto.TL] = criarInode(
             disco, usuario, tipoArq, *qtBlocos, endInode, "");
@@ -758,11 +763,12 @@ void inserirInodeID(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, 
     if (disco[endInodeInd].inodeIndireto.TL < QTDE_INODE_INDIRETO) {
         int inicio = disco[endInodeInd].inodeIndireto.TL;
         while (inicio < *qtBlocos && inicio < QTDE_INODE_INDIRETO) {
-            if (disco[endInodeInd].inodeIndireto.endInd[inicio] == endNulo())
+            if (disco[endInodeInd].inodeIndireto.endInd[inicio] == endNulo()) {
                 disco[endInodeInd].inodeIndireto.endInd[inicio] = criarInodeInd(disco);
-            inserirInodeIS(disco, endInode, disco[endInodeInd].inodeIndireto.endInd[inicio], &*qtBlocos, inseridoT,
-                           usuario, tipoArq);
-            disco[endInodeInd].inodeIndireto.TL++;
+                inserirInodeIS(disco, endInode, disco[endInodeInd].inodeIndireto.endInd[inicio], &*qtBlocos, inseridoT,
+                               usuario, tipoArq);
+                disco[endInodeInd].inodeIndireto.TL++;
+            }
             inicio++;
         }
     }
@@ -772,11 +778,12 @@ void inserirInodeIT(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, 
     if (disco[endInodeInd].inodeIndireto.TL < QTDE_INODE_INDIRETO) {
         int inicio = disco[endInodeInd].inodeIndireto.TL;
         while (inicio < *qtBlocos && inicio < QTDE_INODE_INDIRETO) {
-            if (disco[endInodeInd].inodeIndireto.endInd[inicio] == endNulo())
+            if (disco[endInodeInd].inodeIndireto.endInd[inicio] == endNulo()) {
                 disco[endInodeInd].inodeIndireto.endInd[inicio] = criarInodeInd(disco);
-            inserirInodeID(disco, endInode, disco[endInodeInd].inodeIndireto.endInd[inicio], &*qtBlocos, 0,
-                           usuario, tipoArq);
-            disco[endInodeInd].inodeIndireto.TL++;
+                inserirInodeID(disco, endInode, disco[endInodeInd].inodeIndireto.endInd[inicio], &*qtBlocos, 0,
+                               usuario, tipoArq);
+                disco[endInodeInd].inodeIndireto.TL++;
+            }
             inicio++;
         }
     }
@@ -842,10 +849,10 @@ int criarInode(Bloco *disco, char *usuario, char tipoArq, int tamanho, int endPa
             inserirInodeIT(disco, endBloco, disco[endBloco].inode.endTriploIndireto, &blocosRest, usuario, tipoArq);
         }
         if (blocosRest > 0) {
-            pushBlocoLivre(
-                disco,
-                disco[disco[disco[disco[endBloco].inode.endTriploIndireto].inodeIndireto.endInd[4]].inodeIndireto.
-                    endInd[4]].inodeIndireto.endInd[4]);
+            pushBlocoLivre(disco,
+                           disco[disco[disco[disco[endBloco].inode.endTriploIndireto].inodeIndireto.endInd[4]].
+                               inodeIndireto.
+                               endInd[4]].inodeIndireto.endInd[4]);
             disco[disco[disco[disco[endBloco].inode.endTriploIndireto].inodeIndireto.endInd[4]].inodeIndireto.endInd
                         [4]]
                     .inodeIndireto.endInd[4] = criarInode(disco, usuario, tipoArq, blocosRest * 10 + 1, endPai,
