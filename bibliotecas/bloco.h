@@ -714,14 +714,16 @@ void inserirInodeIS(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, 
 
     if (disco[endInodeInd].inodeIndireto.TL < QTDE_INODE_INDIRETO - inseridoT) {
         int inicio = disco[endInodeInd].inodeIndireto.TL;
-        while (/*inicio < *qtBlocos && */inicio < QTDE_INODE_INDIRETO - inseridoT) {
+        while (/*inicio < *qtBlocos*/ *qtBlocos > 0 && inicio < QTDE_INODE_INDIRETO - inseridoT) {
             disco[endInodeInd].inodeIndireto.endInd[inicio] = popBlocoLivre(disco);
-            disco[endInodeInd].inodeIndireto.TL++;
-            utilizados++;
+            if (disco[endInodeInd].inodeIndireto.endInd[inicio] != endNulo())
+                disco[endInodeInd].inodeIndireto.TL++;
+                //utilizados++;
+            (*qtBlocos)--;
             inicio++;
         }
     }
-    *qtBlocos = *qtBlocos - utilizados;
+    //*qtBlocos = *qtBlocos - utilizados;
     if (inseridoT && *qtBlocos > 0) {
         disco[endInodeInd].inodeIndireto.endInd[disco[endInodeInd].inodeIndireto.TL] = criarInode(
             disco, usuario, tipoArq, *qtBlocos, endInode, "");

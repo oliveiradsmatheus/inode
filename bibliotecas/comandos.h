@@ -50,13 +50,13 @@ void listar(Bloco *disco, int end) {
                 if (disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].inode.permissao[0] == 'd') {
                     // Se diretório
                     printf(AZUL);
-                }
-                else if (disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].inode.permissao[0] == 'l') {
+                } else if (disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode].inode.permissao[0] ==
+                           'l') {
                     // Se link
                     printf(CIANO);
                 }
                 printf("%s     ",
-                    disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
+                       disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
                 printf(RESET);
                 vazio = 0;
             }
@@ -74,16 +74,17 @@ void listar(Bloco *disco, int end) {
                 if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[i]]) &&
                     !bad(disco[disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode])) {
                     // Verificar se é um diretório ou arquivo
-                    if (disco[disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode].inode.permissao[0] == 'd') {
+                    if (disco[disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode].inode.permissao[
+                            0] == 'd') {
                         // Diretório
                         printf(AZUL);
-                    }
-                    else if (disco[disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode].inode.permissao[0] == 'l'){
+                    } else if (disco[disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].endInode].inode.
+                               permissao[0] == 'l') {
                         // Link
                         printf(CIANO);
                     }
                     printf("%s     ",
-                        disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].nome);
+                           disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].nome);
                     printf(RESET);
                 }
             printf("\n");
@@ -100,14 +101,15 @@ void listar(Bloco *disco, int end) {
                 while (j < QTDE_INODE_INDIRETO && disco[endSimples].inodeIndireto.endInd[j] != endNulo()) {
                     for (k = 2; k < disco[disco[endSimples].inodeIndireto.endInd[j]].dir.TL; k++)
                         if (!dirVazio(disco[disco[endSimples].inodeIndireto.endInd[j]])) {
-                            if (disco[disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[j].endInode].inode.permissao[0] == 'd') {
+                            if (disco[disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[j].endInode].inode.
+                                permissao[0] == 'd') {
                                 printf(AZUL);
-                            }
-                            else if (disco[disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[j].endInode].inode.permissao[0] == 'l'){
+                            } else if (disco[disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[j].endInode].
+                                       inode.permissao[0] == 'l') {
                                 printf(CIANO);
                             }
                             printf("%s     ",
-                                disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].nome);
+                                   disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].nome);
                             printf(RESET);
                         }
                     printf("\n");
@@ -135,17 +137,18 @@ void listar(Bloco *disco, int end) {
                                     for (l = 2; l < disco[disco[endSimples].inodeIndireto.endInd[k]].dir.TL; l++)
                                         if (!dirVazio(disco[endSimples])) {
                                             // Verificar se é diretório ou arquivo
-                                            if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[k].endInode].inode.permissao[0] == 'd') {
+                                            if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[k].
+                                                    endInode].inode.permissao[0] == 'd') {
                                                 // Diretório
                                                 printf(AZUL);
-                                            }
-                                            else if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[k].endInode].inode.permissao[0] == 'l'){
+                                            } else if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.
+                                                           arquivo[k].endInode].inode.permissao[0] == 'l') {
                                                 // Link
                                                 printf(CIANO);
                                             }
                                             printf("%s     ",
-                                                disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
-                                                nome);
+                                                   disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
+                                                   nome);
                                             printf(RESET);
                                         }
                                     printf("\n");
@@ -288,7 +291,7 @@ void listarAtributos(Bloco *disco, int end) {
                                     for (l = 2; l < disco[disco[endSimples].inodeIndireto.endInd[k]].dir.TL; l++)
                                         if (!dirVazio(disco[endSimples])) {
                                             endInode = disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
-                                            endInode;
+                                                    endInode;
                                             if (disco[endInode].inode.permissao[0] == 'd')
                                                 strcpy(cor,AZUL);
                                             else if (disco[endInode].inode.permissao[0] == 'l')
@@ -298,7 +301,8 @@ void listarAtributos(Bloco *disco, int end) {
                                                 disco[endInode].inode.permissao, disco[endInode].inode.contadorLink,
                                                 disco[endInode].inode.proprietario, disco[endInode].inode.grupo,
                                                 disco[endInode].inode.ultimaAlteracao, cor,
-                                                disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].nome, RESET);
+                                                disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].nome,
+                                                RESET);
                                             if (disco[disco[disco[endSimples].inodeIndireto.endInd[k]].dir.arquivo[l].
                                                     endInode].inode.permissao[0] == 'l')
                                                 printf(" -> %s",
@@ -1546,22 +1550,21 @@ void diminuirBlocos(Bloco *disco, int endInode, int *quant) {
         }
     if (endTriplo != endNulo()) {
         while (i >= 0 && *quant > 0) {
-            j = QTDE_INODE_INDIRETO - 1;
             if (disco[endTriplo].inodeIndireto.endInd[i] != endNulo()) {
+                j = QTDE_INODE_INDIRETO - 1;
                 endDuplo = disco[endTriplo].inodeIndireto.endInd[i];
                 while (j >= 0 && *quant > 0) {
-                    k = QTDE_INODE_INDIRETO - 1;
                     if (disco[endDuplo].inodeIndireto.endInd[j] != endNulo()) {
+                        k = QTDE_INODE_INDIRETO - 1;
                         endSimples = disco[endDuplo].inodeIndireto.endInd[j];
-                        if (disco[endSimples].inodeIndireto.endInd[k] != endNulo()) {
-                            while (k != 0 && disco[endSimples].inodeIndireto.endInd[k] == endNulo())
-                                k++;
-                            while (k >= 0 && *quant > 0) {
+                        while (k >= 0 && *quant > 0) {
+                            if (disco[endSimples].inodeIndireto.endInd[k] != endNulo()) {
                                 pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[k]);
-                                disco[endSimples].inodeIndireto.endInd[k--] = -1;
+                                disco[endSimples].inodeIndireto.endInd[k] = -1;
                                 disco[endSimples].inodeIndireto.TL--;
                                 (*quant)--;
                             }
+                            k--;
                         }
                         if (disco[endSimples].inodeIndireto.TL == 0) {
                             pushBlocoLivre(disco, disco[endDuplo].inodeIndireto.endInd[j]);
@@ -1592,16 +1595,16 @@ void diminuirBlocos(Bloco *disco, int endInode, int *quant) {
                 j = QTDE_INODE_INDIRETO - 1;
                 if (disco[endDuplo].inodeIndireto.endInd[i] != endNulo()) {
                     endSimples = disco[endDuplo].inodeIndireto.endInd[i];
-                    if (disco[endSimples].inodeIndireto.endInd[j] != endNulo()) {
-                        while (j != 0 && disco[endSimples].inodeIndireto.endInd[j] == endNulo())
-                            j++;
-                        while (j >= 0 && *quant > 0) {
-                            pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[j]);
-                            disco[endSimples].inodeIndireto.endInd[j--] = -1;
-                            disco[endSimples].inodeIndireto.TL--;
-                            (*quant)--;
-                        }
+                    //if (disco[endSimples].inodeIndireto.endInd[j] != endNulo()) {
+                    while (j != 0 && disco[endSimples].inodeIndireto.endInd[j] == endNulo())
+                        j++;
+                    while (j >= 0 && *quant > 0) {
+                        pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[j]);
+                        disco[endSimples].inodeIndireto.endInd[j--] = -1;
+                        disco[endSimples].inodeIndireto.TL--;
+                        (*quant)--;
                     }
+                    //}
                     if (disco[endSimples].inodeIndireto.TL == 0) {
                         pushBlocoLivre(disco, disco[endDuplo].inodeIndireto.endInd[i]);
                         disco[endDuplo].inodeIndireto.endInd[i] = -1;
@@ -1618,20 +1621,20 @@ void diminuirBlocos(Bloco *disco, int endInode, int *quant) {
         if (*quant > 0) {
             i = QTDE_INODE_INDIRETO - 1;
             endSimples = disco[endInode].inode.endSimplesIndireto;
-            if (endSimples != endNulo()) {
-                while (i != 0 && disco[endSimples].inodeIndireto.endInd[i] == endNulo())
-                    i--;
-                while (i >= 0 && *quant > 0) {
-                    pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[i]);
-                    disco[endSimples].inodeIndireto.endInd[i--] = -1;
-                    disco[endSimples].inodeIndireto.TL--;
-                    (*quant)--;
-                }
-                if (disco[endSimples].inodeIndireto.TL == 0) {
-                    pushBlocoLivre(disco, disco[endInode].inode.endSimplesIndireto);
-                    disco[endInode].inode.endSimplesIndireto = -1;
-                }
+            //if (endSimples != endNulo()) {
+            while (i != 0 && disco[endSimples].inodeIndireto.endInd[i] == endNulo())
+                i--;
+            while (i >= 0 && *quant > 0) {
+                pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[i]);
+                disco[endSimples].inodeIndireto.endInd[i--] = -1;
+                disco[endSimples].inodeIndireto.TL--;
+                (*quant)--;
             }
+            if (disco[endSimples].inodeIndireto.TL == 0) {
+                pushBlocoLivre(disco, disco[endInode].inode.endSimplesIndireto);
+                disco[endInode].inode.endSimplesIndireto = -1;
+            }
+            //}
             if (*quant > 0) {
                 i = QTDE_INODE_DIRETO - 1;
                 while (i != 0 && disco[endInode].inode.endDireto[i] == endNulo())
