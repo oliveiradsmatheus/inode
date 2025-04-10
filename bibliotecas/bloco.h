@@ -322,7 +322,7 @@ int qtdeBlocosNecessarios(int qtdeBlocos) {
     return cont;
 }
 
-int qtdeBlocosLivres(Bloco *disco) {
+int qtdeBlocosLivresbkp(Bloco *disco) {
     int qtde = 0, end = CABECA_LISTA_BL;
 
     while (!fimLista(disco[end])) {
@@ -330,6 +330,25 @@ int qtdeBlocosLivres(Bloco *disco) {
         end = disco[end].listaBlocosLivres.endProxLista;
     }
     qtde += disco[end].listaBlocosLivres.topo + 1;
+
+    return qtde;
+}
+
+int qtdeBlocosLivres(Bloco *disco) {
+    int qtde = 0, i, endBloco, end = CABECA_LISTA_BL;
+
+    while (!fimLista(disco[end])) {
+        for (i = 0; i <= disco[end].listaBlocosLivres.topo; i++) {
+            endBloco = disco[end].listaBlocosLivres.end[i];
+            if (!bad(disco[endBloco]))
+                qtde++;
+        }end = disco[end].listaBlocosLivres.endProxLista;
+    }
+    for (i = 0; i <= disco[end].listaBlocosLivres.topo; i++) {
+        endBloco = disco[end].listaBlocosLivres.end[i];
+        if (!bad(disco[endBloco]))
+            qtde++;
+    }
 
     return qtde;
 }
@@ -345,8 +364,10 @@ int popBlocoLivre(Bloco *disco) {
     }
     if (end != endNulo())
         if (!listaVazia(disco[end])) {
-            if (bad(disco[end]))
+            if (bad(disco[disco[end].listaBlocosLivres.end[disco[end].listaBlocosLivres.topo]])) {
+                disco[end].listaBlocosLivres.end[disco[end].listaBlocosLivres.topo--];
                 return popBlocoLivre(disco);
+            }
             return disco[end].listaBlocosLivres.end[disco[end].listaBlocosLivres.topo--];
         }
     return endNulo();
