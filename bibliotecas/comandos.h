@@ -1828,13 +1828,13 @@ int maiorArquivoPossivel(Bloco *disco) {
         }
         if (qtdeBlocos > 0) {
             i = 0;
-            qtdeBlocos--; // i-node indireto duplo
+            qtdeBlocos--; // i-node indireto triplo
             while (qtdeBlocos > 0 && i < 5) {
                 j = 0;
-                qtdeBlocos--; // i-node indireto simples
+                qtdeBlocos--; // i-node indireto duplo
                 while (qtdeBlocos > 0 && j < 5) {
                     k = 0;
-                    qtdeBlocos--;
+                    qtdeBlocos--; // i-node indireto simples
                     while (qtdeBlocos > 0 && k < 5) {
                         qtdeBlocos--;
                         cont++;
@@ -1881,12 +1881,12 @@ void touch(Bloco *disco, int end, int raiz, char *usuario, char *nomeArq, int ta
     endDestino = buscaEntradaDiretorio(disco, raiz, end, nomeArq, usuario);
     if (endDestino != -1)
         if (buscaArquivo(disco, end, nomeArquivoDestino, &pos, &endArq) == -1) {
-            if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) < qtdeBlocosLivres(disco))
+            if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) <= qtdeBlocosLivres(disco))
                 adicionarEntrada(disco, endDestino, usuario, nomeArquivoDestino, 'a', tam, "");
             else
                 printf("Espaco em disco insuficiente!\n");
         } else {
-            if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) < qtdeBlocosLivres(disco)) {
+            if (qtdeBlocosNecessarios((int) ((float) tam / (float) 10)) <= qtdeBlocosLivres(disco)) {
                 horarioLocal(data);
                 strcpy(disco[disco[endArq].dir.arquivo[pos].endInode].inode.ultimaAlteracao, data);
                 tamAnt = disco[disco[endArq].dir.arquivo[pos].endInode].inode.tamanho;

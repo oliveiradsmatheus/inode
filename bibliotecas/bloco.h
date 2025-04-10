@@ -343,11 +343,12 @@ int popBlocoLivre(Bloco *disco) {
         end = endProx;
         endProx = disco[end].listaBlocosLivres.endProxLista;
     }
-    if (!listaVazia(disco[end])) {
-        if (bad(disco[end]))
-            return popBlocoLivre(disco);
-        return disco[end].listaBlocosLivres.end[disco[end].listaBlocosLivres.topo--];
-    }
+    if (end != endNulo())
+        if (!listaVazia(disco[end])) {
+            if (bad(disco[end]))
+                return popBlocoLivre(disco);
+            return disco[end].listaBlocosLivres.end[disco[end].listaBlocosLivres.topo--];
+        }
     return endNulo();
 }
 
@@ -541,7 +542,8 @@ void listarStatus(Bloco *disco, int end) {
                     if (!corrompido(disco, disco[disco[disco[end].inode.endDireto[i]].dir.arquivo[j].endInode]))
                         printf("%s - Íntegro\n", disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome);
                     else
-                        printf("%s - %sCorrompido%s\n", disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome, VERMELHO, RESET);
+                        printf("%s - %sCorrompido%s\n", disco[disco[end].inode.endDireto[i]].dir.arquivo[j].nome,
+                               VERMELHO, RESET);
             }
         i++;
     }
@@ -560,7 +562,8 @@ void listarStatus(Bloco *disco, int end) {
                                    disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].nome);
                         else
                             printf("%s - %sCorrompido%s\n",
-                                   disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].nome, VERMELHO, RESET);
+                                   disco[disco[endSimples].inodeIndireto.endInd[i]].dir.arquivo[j].nome, VERMELHO,
+                                   RESET);
             i++;
         }
         if (disco[end].inode.endDuploIndireto != endNulo()) {
@@ -581,7 +584,8 @@ void listarStatus(Bloco *disco, int end) {
                                            disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].nome);
                                 else
                                     printf("%s - %sCorrompido%s\n",
-                                           disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].nome, VERMELHO, RESET);
+                                           disco[disco[endSimples].inodeIndireto.endInd[j]].dir.arquivo[k].nome,
+                                           VERMELHO, RESET);
                     j++;
                 }
                 i++;
@@ -710,7 +714,7 @@ void inserirInodeIS(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, 
 
     if (disco[endInodeInd].inodeIndireto.TL < QTDE_INODE_INDIRETO - inseridoT) {
         int inicio = disco[endInodeInd].inodeIndireto.TL;
-        while (inicio < *qtBlocos && inicio < QTDE_INODE_INDIRETO - inseridoT) {
+        while (/*inicio < *qtBlocos && */inicio < QTDE_INODE_INDIRETO - inseridoT) {
             disco[endInodeInd].inodeIndireto.endInd[inicio] = popBlocoLivre(disco);
             disco[endInodeInd].inodeIndireto.TL++;
             utilizados++;
@@ -718,10 +722,7 @@ void inserirInodeIS(Bloco *disco, int endInode, int endInodeInd, int *qtBlocos, 
         }
     }
     *qtBlocos = *qtBlocos - utilizados;
-    if (inseridoT && *qtBlocos
-        >
-        0
-    ) {
+    if (inseridoT && *qtBlocos > 0) {
         disco[endInodeInd].inodeIndireto.endInd[disco[endInodeInd].inodeIndireto.TL] = criarInode(
             disco, usuario, tipoArq, *qtBlocos, endInode, "");
         if (disco[endInodeInd].inodeIndireto.endInd[disco[endInodeInd].inodeIndireto.TL] != endNulo())
@@ -884,14 +885,12 @@ void adicionarEntrada(Bloco *disco, int end, char *usuario, char *nomeEntrada, c
                         adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[i],
                                          "..", endPai);
                         adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[i],
-                                         nomeEntrada,
-                                         criarInode(disco, usuario, tipo, tam, end, caminhoLink));
+                                         nomeEntrada, criarInode(disco, usuario, tipo, tam, end, caminhoLink));
                     } else
                         printf("Erro: Espaco em disco insuficiente!\n");
                 } else if (!dirCheio(disco[disco[indSimples].inodeIndireto.endInd[i]])) {
                     adicionarArquivo(disco, disco[indSimples].inodeIndireto.endInd[i],
-                                     nomeEntrada,
-                                     criarInode(disco, usuario, tipo, tam, end, caminhoLink));
+                                     nomeEntrada, criarInode(disco, usuario, tipo, tam, end, caminhoLink));
                 }
             } else {
                 if (disco[end].inode.endDuploIndireto == endNulo())
