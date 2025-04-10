@@ -1536,7 +1536,7 @@ void diminuirBlocos(Bloco *disco, int endInode, int *quant) {
 
     i = QTDE_INODE_INDIRETO - 1;
     endTriplo = disco[endInode].inode.endTriploIndireto;
-    if (endTriplo != endNulo())
+    if (endTriplo != endNulo() && !bad(disco[endTriplo]))
         if (disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]) {
             diminuirBlocos(
                 disco,
@@ -1548,36 +1548,40 @@ void diminuirBlocos(Bloco *disco, int endInode, int *quant) {
             disco[disco[disco[endTriplo].inodeIndireto.endInd[4]].inodeIndireto.endInd[4]].inodeIndireto.endInd[4] =
                     popBlocoLivre(disco);
         }
-    if (endTriplo != endNulo()) {
+    if (endTriplo != endNulo() && !bad(disco[endTriplo])) {
         while (i >= 0 && *quant > 0) {
             if (disco[endTriplo].inodeIndireto.endInd[i] != endNulo()) {
                 j = QTDE_INODE_INDIRETO - 1;
                 endDuplo = disco[endTriplo].inodeIndireto.endInd[i];
-                while (j >= 0 && *quant > 0) {
-                    if (disco[endDuplo].inodeIndireto.endInd[j] != endNulo()) {
-                        k = QTDE_INODE_INDIRETO - 1;
-                        endSimples = disco[endDuplo].inodeIndireto.endInd[j];
-                        while (k >= 0 && *quant > 0) {
-                            if (disco[endSimples].inodeIndireto.endInd[k] != endNulo()) {
-                                pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[k]);
-                                disco[endSimples].inodeIndireto.endInd[k] = -1;
-                                disco[endSimples].inodeIndireto.TL--;
-                                (*quant)--;
+                if (endDuplo != endNulo() && !bad(disco[endDuplo])) {
+                    while (j >= 0 && *quant > 0) {
+                        if (disco[endDuplo].inodeIndireto.endInd[j] != endNulo()) {
+                            k = QTDE_INODE_INDIRETO - 1;
+                            endSimples = disco[endDuplo].inodeIndireto.endInd[j];
+                            if (endSimples != endNulo() && !bad(disco[endSimples])) {
+                                while (k >= 0 && *quant > 0) {
+                                    if (disco[endSimples].inodeIndireto.endInd[k] != endNulo()) {
+                                        pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[k]);
+                                        disco[endSimples].inodeIndireto.endInd[k] = -1;
+                                        disco[endSimples].inodeIndireto.TL--;
+                                        (*quant)--;
+                                    }
+                                    k--;
+                                }
+                                if (disco[endSimples].inodeIndireto.TL == 0) {
+                                    pushBlocoLivre(disco, disco[endDuplo].inodeIndireto.endInd[j]);
+                                    disco[endDuplo].inodeIndireto.endInd[j] = -1;
+                                    disco[endDuplo].inodeIndireto.TL--;
+                                }
                             }
-                            k--;
                         }
-                        if (disco[endSimples].inodeIndireto.TL == 0) {
-                            pushBlocoLivre(disco, disco[endDuplo].inodeIndireto.endInd[j]);
-                            disco[endDuplo].inodeIndireto.endInd[j] = -1;
-                            disco[endDuplo].inodeIndireto.TL--;
-                        }
+                        j--;
                     }
-                    j--;
-                }
-                if (disco[endDuplo].inodeIndireto.TL == 0) {
-                    pushBlocoLivre(disco, disco[endTriplo].inodeIndireto.endInd[i]);
-                    disco[endTriplo].inodeIndireto.endInd[i] = -1;
-                    disco[endTriplo].inodeIndireto.TL--;
+                    if (disco[endDuplo].inodeIndireto.TL == 0) {
+                        pushBlocoLivre(disco, disco[endTriplo].inodeIndireto.endInd[i]);
+                        disco[endTriplo].inodeIndireto.endInd[i] = -1;
+                        disco[endTriplo].inodeIndireto.TL--;
+                    }
                 }
             }
             i--;
@@ -1590,25 +1594,26 @@ void diminuirBlocos(Bloco *disco, int endInode, int *quant) {
     if (*quant > 0) {
         i = QTDE_INODE_INDIRETO - 1;
         endDuplo = disco[endInode].inode.endDuploIndireto;
-        if (endDuplo != endNulo()) {
+        if (endDuplo != endNulo() && !bad(disco[endDuplo])) {
             while (i >= 0 && *quant > 0) {
-                j = QTDE_INODE_INDIRETO - 1;
                 if (disco[endDuplo].inodeIndireto.endInd[i] != endNulo()) {
+                    j = QTDE_INODE_INDIRETO - 1;
                     endSimples = disco[endDuplo].inodeIndireto.endInd[i];
-                    //if (disco[endSimples].inodeIndireto.endInd[j] != endNulo()) {
-                    while (j != 0 && disco[endSimples].inodeIndireto.endInd[j] == endNulo())
-                        j++;
-                    while (j >= 0 && *quant > 0) {
-                        pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[j]);
-                        disco[endSimples].inodeIndireto.endInd[j--] = -1;
-                        disco[endSimples].inodeIndireto.TL--;
-                        (*quant)--;
-                    }
-                    //}
-                    if (disco[endSimples].inodeIndireto.TL == 0) {
-                        pushBlocoLivre(disco, disco[endDuplo].inodeIndireto.endInd[i]);
-                        disco[endDuplo].inodeIndireto.endInd[i] = -1;
-                        disco[endDuplo].inodeIndireto.TL--;
+                    if (endSimples != endNulo() && !bad(disco[endSimples])) {
+                        while (j >= 0 && *quant > 0) {
+                            if (disco[endSimples].inodeIndireto.endInd[j] != endNulo()) {
+                                pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[j]);
+                                disco[endSimples].inodeIndireto.endInd[j] = -1;
+                                disco[endSimples].inodeIndireto.TL--;
+                                (*quant)--;
+                            }
+                            j--;
+                        }
+                        if (disco[endSimples].inodeIndireto.TL == 0) {
+                            pushBlocoLivre(disco, disco[endDuplo].inodeIndireto.endInd[i]);
+                            disco[endDuplo].inodeIndireto.endInd[i] = -1;
+                            disco[endDuplo].inodeIndireto.TL--;
+                        }
                     }
                 }
                 i--;
@@ -1621,28 +1626,32 @@ void diminuirBlocos(Bloco *disco, int endInode, int *quant) {
         if (*quant > 0) {
             i = QTDE_INODE_INDIRETO - 1;
             endSimples = disco[endInode].inode.endSimplesIndireto;
-            //if (endSimples != endNulo()) {
-            while (i != 0 && disco[endSimples].inodeIndireto.endInd[i] == endNulo())
-                i--;
-            while (i >= 0 && *quant > 0) {
-                pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[i]);
-                disco[endSimples].inodeIndireto.endInd[i--] = -1;
-                disco[endSimples].inodeIndireto.TL--;
-                (*quant)--;
+            if (endSimples != endNulo() && !bad(disco[endSimples])) {
+                while (i >= 0 && *quant > 0) {
+                    if (disco[endSimples].inodeIndireto.endInd[i] != endNulo()) {
+                        pushBlocoLivre(disco, disco[endSimples].inodeIndireto.endInd[i]);
+                        disco[endSimples].inodeIndireto.endInd[i] = -1;
+                        disco[endSimples].inodeIndireto.TL--;
+                        (*quant)--;
+                    }
+                    i--;
+                }
+                if (disco[endSimples].inodeIndireto.TL == 0) {
+                    pushBlocoLivre(disco, disco[endInode].inode.endSimplesIndireto);
+                    disco[endInode].inode.endSimplesIndireto = -1;
+                }
             }
-            if (disco[endSimples].inodeIndireto.TL == 0) {
-                pushBlocoLivre(disco, disco[endInode].inode.endSimplesIndireto);
-                disco[endInode].inode.endSimplesIndireto = -1;
-            }
-            //}
             if (*quant > 0) {
                 i = QTDE_INODE_DIRETO - 1;
-                while (i != 0 && disco[endInode].inode.endDireto[i] == endNulo())
-                    i--;
-                while (i >= 0 && quant > 0) {
-                    pushBlocoLivre(disco, disco[endInode].inode.endDireto[i]);
-                    disco[endInode].inode.endDireto[i--] = -1;
-                    (*quant)--;
+                if (!bad(disco[disco[endInode].inode.endDireto[i]])) {
+                    while (i >= 0 && quant > 0) {
+                        if (disco[endInode].inode.endDireto[i] != endNulo()) {
+                            pushBlocoLivre(disco, disco[endInode].inode.endDireto[i]);
+                            disco[endInode].inode.endDireto[i] = -1;
+                            (*quant)--;
+                        }
+                        i--;
+                    }
                 }
             }
         }
@@ -1673,24 +1682,28 @@ void rm(Bloco *disco, int endEntrada, char *nomeArq) {
         } else {
             i = pos;
             endExcluir = disco[end].dir.arquivo[i].endInode;
-            while (i < disco[end].dir.TL) {
-                strcpy(disco[end].dir.arquivo[i].nome, disco[end].dir.arquivo[i + 1].nome);
-                disco[end].dir.arquivo[i].endInode = disco[end].dir.arquivo[i + 1].endInode;
-                i++;
-            }
-            disco[end].dir.TL--;
-            if (disco[inodeArq].inode.permissao[0] == 'l') {
-                pushBlocoLivre(disco, disco[inodeArq].inode.endDireto[0]);
-                pushBlocoLivre(disco, inodeArq);
-            } else {
-                disco[endExcluir].inode.contadorLink--;
-                if (disco[endExcluir].inode.contadorLink == 0) {
-                    tam = (int) (ceil)((float) disco[inodeArq].inode.tamanho / (float) 10);
-                    diminuirBlocos(disco, inodeArq, &tam);
+            if (disco[endExcluir].bad == 1)
+                printf("rm: falhou em remover '%s': Arquivo corrompido\n", nomeArq);
+            else {
+                while (i < disco[end].dir.TL) {
+                    strcpy(disco[end].dir.arquivo[i].nome, disco[end].dir.arquivo[i + 1].nome);
+                    disco[end].dir.arquivo[i].endInode = disco[end].dir.arquivo[i + 1].endInode;
+                    i++;
+                }
+                disco[end].dir.TL--;
+                if (disco[inodeArq].inode.permissao[0] == 'l') {
+                    pushBlocoLivre(disco, disco[inodeArq].inode.endDireto[0]);
                     pushBlocoLivre(disco, inodeArq);
+                } else {
+                    disco[endExcluir].inode.contadorLink--;
+                    if (disco[endExcluir].inode.contadorLink == 0) {
+                        tam = (int) (ceil)((float) disco[inodeArq].inode.tamanho / (float) 10);
+                        diminuirBlocos(disco, inodeArq, &tam);
+                        pushBlocoLivre(disco, inodeArq);
+                        inicializarBloco(&disco[endExcluir]);
+                    }
                 }
             }
-            inicializarBloco(&disco[endExcluir]);
         }
     }
 }
