@@ -1933,7 +1933,7 @@ void mkdir(Bloco *disco, int end, char *usuario, char *nomeDir) {
         else
             printf("Espaco em disco insuficiente!\n");
     } else
-        printf("mkdir: nao foi possível criar o diretorio “%s”: Arquivo existe\n", nomeDir);
+        printf("mkdir: nao foi possivel criar o diretorio “%s”: Arquivo existe\n", nomeDir);
 }
 
 int navegar(Bloco *disco, int raiz, int endUsuario, int endAtual, char *comando, char *usuario,
@@ -2161,7 +2161,7 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
         case 5:
             tipoLink = linkValido(comando, origem, destino);
             if (tipoLink == -1)
-                printf("Nao foi possível criar o link '%s' para '%s': Arquivo ou diretorio inexistente\n", origem,
+                printf("Nao foi possivel criar o link '%s' para '%s': Arquivo ou diretorio inexistente\n", origem,
                        destino);
             else {
                 if (tipoLink == 1)
@@ -2176,7 +2176,7 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
         case 7:
             tipoLink = validarUnlink(comando, nomeArq);
             if (tipoLink == -1)
-                printf("Nao foi possível remover o link '%s' para '%s': Arquivo ou diretorio inexistente\n", origem,
+                printf("Nao foi possivel remover o link '%s' para '%s': Arquivo ou diretorio inexistente\n", origem,
                        destino);
             else if (tipoLink == 1)
                 removerLinkSimbolico(disco, raiz, usuario, end, nomeArq);
@@ -2236,7 +2236,7 @@ int executarComando(Bloco *disco, char *usuario, int raiz, int endUsuario, int e
                 printf("O maior arquivo possui %d blocos\n", maior(disco, raiz, tamDisco));
             else if (!strcmp(comando, "maiorp")) {
                 tam = maiorArquivoPossivel(disco);
-                printf("Maior arquivo possível: %d blocos (%d bytes)\n", tam, tam * 10);
+                printf("Maior arquivo possivel: %d blocos (%d bytes)\n", tam, tam * 10);
             }
             break;
         case 18:
